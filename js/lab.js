@@ -118,7 +118,7 @@ for (const a of SLIDERS) a.initial = a.path.reduce((o, k) => o[k], DEFAULTS);
 // The second number beside each chart: how many people sit at 4.8 or above on the stars
 // scale, the share of judgments that were a yes on the other.
 const SECOND = {
-  stars: { value: (m) => m.top48, text: (v) => `${Math.round(v)} rated ${HIGH_BAR}+` },
+  stars: { value: (m) => m.top48, text: (v) => `${Math.round(v)} of 80 at ${HIGH_BAR}+` },
   yes: { value: (m) => m.yesRate, text: (v) => `said yes ${percent(v)}` },
 };
 
@@ -1199,7 +1199,7 @@ function sliderHtml(a, extra = '') {
 function labTemplate(N) {
   const row = (id, name, hits, second) => `
     <div class="lab-row" data-row="${id}">
-      <p class="lab-row-head"><span class="label lab-row-name"${id === 'main' ? ' data-name="main"' : ''}>${name}</span><span class="lab-row-stats"><span class="lab-row-num" data-num="${hits}">0</span><span class="label lab-row-of">of 10<span class="lab-row-wide"> best found</span></span><span class="label lab-row-second" data-num="${second}"> </span></span></p>
+      <p class="lab-row-head"><span class="label lab-row-name"${id === 'main' ? ' data-name="main"' : ''}>${name}</span><span class="lab-row-stats"><span class="lab-row-num" data-num="${hits}">0</span><span class="label lab-row-of">of <span class="lab-row-wide">the </span>10 best<span class="lab-row-wide"> in the top 10</span></span><span class="label lab-row-second" data-num="${second}"> </span></span></p>
       <div class="lab-field-wrap" data-wrap="${id}"><svg class="lab-field" data-field="${id}" role="img" aria-label="A dot plot of ${N} people by score."></svg></div>
     </div>`;
   return `
