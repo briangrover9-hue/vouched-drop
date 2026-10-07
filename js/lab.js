@@ -1,8 +1,8 @@
 // The trust lab: 80 coworkers vouching for each other, drawn as a dot plot that moves round by
 // round. The model lives in lab-model.js; this file draws it and wires up its controls.
 //
-// Scenes 4 to 6 share this one lab. Scene 4 plays the worst rules from round 0, scene 5 praise
-// tied to real work. Scene 6 asks which rules find the best people: a bar for each set of rules, with its average over a dozen
+// Scenes 4 and 5 share this one lab. Scene 4 plays one-click likes and praise tied to real work
+// side by side, on two charts with one axis. Scene 5 asks which rules find the best people: a bar for each set of rules, with its average over a dozen
 // simulated companies, and a tap on a bar runs those rules on this company, with one plain line
 // on what they find and what they cost. "Try other rules" opens a frosted panel over the scene's
 // text, beside the chart on desktop and above it on a phone, so the chart stays in full view
@@ -13,20 +13,21 @@ import { MOVE_MS, ease, animate, reduceMotion, setLine } from './motion.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const ROUND_MS = 280; // time between rounds while playing
-const QUICK_ROUND_MS = 110; // a run started from scene 6's bars, so comparing rules stays quick
+const QUICK_ROUND_MS = 110; // a run started from scene 5's bars, so comparing rules stays quick
 // On the stars scale dots stack in score columns 0.05 wide, or 0.1 wide when the field is
 // too narrow for 0.05 columns to sit side by side without piling into each other. Both
 // widths put column edges on 4.8 and 5, so the 4.8+ band stays exact.
 const COLUMNS_PER_STAR = [20, 10, 5];
 const LANE_COLUMNS = 4; // the lane for people with nothing to count stacks them four across
 const WIDE_FIELD = 520; // field width in pixels from which dots get bigger
-const MIN_FIELD_H = 96;
+const MIN_FIELD_H = 72;
+const COMPARE_ROUND_MS = 120; // scene 4 plays both sets of rules at once, in about four seconds
 // Yes-scale axis ends. On a plain count of yeses each divides by 4, so the quarter ticks are
 // whole numbers. Weighted yeses sit on a square-root axis, whose even ticks fall at 1, 4 and 9
 // sixteenths of the end, so each of those ends divides by 16.
 const YES_AXIS = [4, 8, 12, 16, 20, 24, 32, 40, 60, 80, 100, 120, 160, 200, 240, 300, 400, 600, 800, 1000, 1200, 1600, 2000, 2400, 3000, 4000];
 const ROOT_AXIS = [16, 32, 48, 64, 80, 96, 128, 160, 192, 240, 320, 400, 480, 640, 800, 960, 1280, 1600, 1920, 2400, 3200, 4000];
-// Scene 5 plays the rules its headline names: praise tied to real work.
+// Scene 4's lower chart plays praise tied to real work, the rules its headline names.
 const WORK = Object.freeze({ ...WORST, type: 'work' });
 const html = document.documentElement;
 
@@ -115,16 +116,11 @@ const ASSUMPTIONS = [
 const SLIDERS = [ANCHOR, ...ASSUMPTIONS];
 for (const a of SLIDERS) a.initial = a.path.reduce((o, k) => o[k], DEFAULTS);
 
-// The second big number: the average score on the stars scale, the share of yeses on the other.
+// The second number beside each chart: how many people sit at 4.8 or above on the stars
+// scale, the share of judgments that were a yes on the other.
 const SECOND = {
-  stars: { label: 'Average score', value: (m) => m.mean, text: (v) => v.toFixed(2) },
-  yes: { label: 'Said yes', value: (m) => m.yesRate, text: percent },
-};
-// The small line of that number, round by round. Every setting and assumption keeps the
-// average between 3 and 5 (2.99 to 4.89 when measured), so its axis starts at 3.
-const TREND = {
-  stars: { min: 3, max: 5, value: (h) => h.mean, title: 'Average score, round by round', text: (v) => v.toFixed(2) },
-  yes: { min: 0, max: 1, value: (h) => h.yesRate, title: 'Share of judgments that were a yes, round by round', text: percent },
+  stars: { value: (m) => m.top48, text: (v) => `${Math.round(v)} rated ${HIGH_BAR}+` },
+  yes: { value: (m) => m.yesRate, text: (v) => `said yes ${percent(v)}` },
 };
 
 const root = document.getElementById('lab-root');
@@ -134,8 +130,6 @@ if (root && panel) mount(root, panel);
 function mount(root, panel) {
   const scene = root.closest('.scene');
   const openButton = document.getElementById('rules-open');
-  const labBody = document.getElementById('lab-body');
-  const bodyIntro = labBody ? labBody.textContent.trim() : '';
   const rulesBox = document.getElementById('rules');
 
   const world = createWorld(Number(root.dataset.seed) || 374);
@@ -150,16 +144,15 @@ function mount(root, panel) {
   panel.innerHTML = panelTemplate(WORST);
   panel.setAttribute('tabindex', '-1');
   const $ = (selector) => root.querySelector(selector) || panel.querySelector(selector);
-  const fieldWrap = $('.lab-field-wrap');
-  const svg = $('.lab-field');
+  const fieldWrap = $('[data-wrap="main"]');
+  const svg = $('[data-field="main"]');
+  const mainName = $('[data-name="main"]');
   const roundLabel = $('.lab-round');
   const explain = $('.lab-explain');
   const live = $('.lab-live');
   const legendStar = $('.lab-legend-star');
   const hitsNum = $('[data-num="hits"]');
   const secondNum = $('[data-num="second"]');
-  const secondLabel = $('[data-readout="second"] .lab-readout-label');
-  const spark = $('.lab-spark');
   const anchorBox = $('[data-slider="anchor"]');
   const resultLine = $('.lab-result');
 
@@ -181,11 +174,36 @@ function mount(root, panel) {
     return { g, circle, star, home, top: false };
   });
 
-  // The small line: the last run's line dashed behind this run's.
-  const ghostLine = svgEl('polyline', { class: 'lab-spark-ghost' });
-  const sparkLine = svgEl('polyline', { class: 'lab-spark-line' });
-  const sparkDot = svgEl('circle', { class: 'lab-spark-dot', r: 2.25 });
-  spark.append(ghostLine, sparkLine, sparkDot);
+  const mainField = { svg, staticLayer, nodes };
+
+  // The baseline: the same 80 people under one-click likes, drawn above the main chart so the
+  // two can be compared at a glance. It runs beside the main run in scene 4 and then stays put.
+  const baseWrap = $('[data-wrap="base"]');
+  const baseField = buildField($('[data-field="base"]'));
+  const baseHits = $('[data-num="base-hits"]');
+  const baseSecond = $('[data-num="base-second"]');
+  const base = { run: null, snap: null, playing: false, key: '', geo: null, tweenStart: -1 };
+  const bCur = new Float64Array(N * 2);
+  const bFrom = new Float64Array(N * 2);
+  const bTo = new Float64Array(N * 2);
+
+  function buildField(el) {
+    const st = svgEl('g', { class: 'lab-static' });
+    const hollow = svgEl('g');
+    const filled = svgEl('g');
+    const stars = svgEl('g');
+    el.append(st, hollow, filled, stars);
+    const people = world.people.map((p) => {
+      const home = skilled.has(p.id) ? filled : hollow;
+      const g = svgEl('g', { class: skilled.has(p.id) ? 'lab-p is-skilled' : 'lab-p' });
+      const circle = svgEl('circle', { r: 4.5 });
+      const star = svgEl('path', { class: 'lab-star', d: STAR_PATH });
+      g.append(circle, star);
+      home.append(g);
+      return { g, circle, star, home, top: false };
+    });
+    return { svg: el, staticLayer: st, nodes: people, starLayer: stars, layers: [hollow, filled, stars] };
+  }
 
   const state = {
     settings: { ...WORST },
@@ -238,6 +256,34 @@ function mount(root, panel) {
     state.axisMax = rootAxis(state.settings) ? ROOT_AXIS[0] : YES_AXIS[0];
   }
 
+  function startBase() {
+    base.run = createRun(world, WORST, state.runSeed, overrides());
+    base.key = SLIDERS.map((a) => state.values[a.id]).join('|');
+    base.playing = false;
+    showBase(base.run.snapshot(), false);
+  }
+  // The baseline at its end, unless it already ran with these assumptions.
+  function settleBase(animateIt = true) {
+    if (!base.run || base.key !== SLIDERS.map((a) => state.values[a.id]).join('|')) startBase();
+    base.playing = false;
+    if (base.run.done && base.snap && base.snap.round === base.run.rounds) return;
+    while (!base.run.done) base.run.step();
+    showBase(base.run.snapshot(), animateIt && !reduced);
+  }
+  // Both charts from round 0, side by side.
+  function playBoth() {
+    startRun();
+    startBase();
+    idle();
+    if (reduced) {
+      settleBase(false);
+      finishNow();
+      return;
+    }
+    base.playing = true;
+    play(COMPARE_ROUND_MS);
+  }
+
   function play(pace = ROUND_MS) {
     clearTimeout(startTimer);
     state.resumeOnShow = false;
@@ -270,6 +316,10 @@ function mount(root, panel) {
   }
 
   function advance(now) {
+    if (base.playing && base.run && !base.run.done) {
+      showBase(base.run.step(), !reduced, now);
+      if (base.run.done) base.playing = false;
+    }
     show(state.run.step(), !reduced, now);
     if (state.run.done) finish();
   }
@@ -285,6 +335,7 @@ function mount(root, panel) {
     const moving = animateIt && !reduced;
     if (moving && !stopNumbers) stopNumbers = () => {}; // show() leaves the numbers to countNumbers
     show(state.run.snapshot(), moving);
+    if (base.playing || !base.run || !base.run.done) settleBase(animateIt);
     if (moving) countNumbers(before);
     else fadeIn();
     finish();
@@ -310,24 +361,21 @@ function mount(root, panel) {
     const S = state.run.settings;
     svg.setAttribute('aria-label', finishedLabel(m, S, state.run.rounds));
     state.lastFinished = { key: state.key, scale: S.scale, metrics: m, history: snap.history };
-    if (state.scene === 'lab') foldHowSoon();
-    narrate(m);
     describeRules(m);
+    narrate(m);
     const second = S.scale === 'stars' ? ` The average score is ${m.mean.toFixed(2)}.` : ` People said yes ${percent(m.yesRate)} of the time.`;
     announce(`After ${state.run.rounds} rounds, the gold stars found ${m.hits} of the 10 best.${second}`);
   }
 
-  // Scene 4's line once the worst rules have played out.
+  // Scene 4's line once both charts have played out, from this run's own numbers.
   function narrate(m) {
-    const plain = assumptionsUntouched();
-    if (plain && sameAs(state.settings, WORST) && m.hits !== null) {
-      setLine(
-        labBody,
-        m.top48 >= 20
-          ? `Everyone drifted toward 5, and the stars found only ${m.hits} of the 10 best.`
-          : `The stars found ${m.hits} of the 10 best.`,
-      );
-    }
+    if (state.scene !== 'lab' || !resultLine || !base.run || !base.run.done) return;
+    if (!assumptionsUntouched() || !sameAs(state.settings, WORK) || m.hits === null) return;
+    const b = base.run.snapshot().metrics;
+    setLine(
+      resultLine,
+      `One-click likes piled ${b.top48} of 80 people at ${HIGH_BAR}+ and found ${b.hits} of the 10 best. Real work: ${m.top48} at ${HIGH_BAR}+, ${m.hits} found.`,
+    );
   }
 
   // Clear, then fill after a beat, so a repeated summary is still announced.
@@ -375,7 +423,70 @@ function mount(root, panel) {
 
     if (geo) moveTo(targets(snap, geo), animateIt, now);
     if (!stopNumbers) writeNumbers(snap.metrics, S);
-    drawSpark();
+  }
+
+  // The baseline chart: its stars, its dots and its two numbers.
+  function showBase(snap, animateIt, now = performance.now()) {
+    base.snap = snap;
+    const top = new Set(snap.topScore.filter((i) => snap.scores[i] !== null));
+    baseField.nodes.forEach((n, i) => {
+      const isTop = top.has(i);
+      if (isTop === n.top) return;
+      n.top = isTop;
+      n.g.classList.toggle('is-top', isTop);
+      (isTop ? baseField.starLayer : n.home).append(n.g);
+    });
+    if (base.geo) moveBase(targets(snap, base.geo), animateIt, now);
+    const m = snap.metrics;
+    setText(baseHits, String(m.hits === null ? 0 : m.hits));
+    setText(baseSecond, m.top48 === null ? ' ' : SECOND.stars.text(m.top48));
+  }
+  function placeBase(i) {
+    if (!Number.isFinite(bCur[2 * i]) || !Number.isFinite(bCur[2 * i + 1])) {
+      bCur[2 * i] = bTo[2 * i];
+      bCur[2 * i + 1] = bTo[2 * i + 1];
+    }
+    baseField.nodes[i].g.setAttribute('transform', `translate(${bCur[2 * i].toFixed(1)} ${bCur[2 * i + 1].toFixed(1)})`);
+  }
+  function moveBase(next, animateIt, now = performance.now()) {
+    if (!animateIt) {
+      bCur.set(next);
+      bTo.set(next);
+      base.tweenStart = -1;
+      for (let i = 0; i < N; i++) placeBase(i);
+      return;
+    }
+    bFrom.set(bCur);
+    bTo.set(next);
+    base.tweenStart = now;
+    loop();
+  }
+  function tweenBase(now) {
+    const t = Math.min(1, Math.max(0, (now - base.tweenStart) / MOVE_MS));
+    const e = ease(t);
+    for (let i = 0; i < N; i++) {
+      const x = 2 * i;
+      if (bFrom[x] === bTo[x] && bFrom[x + 1] === bTo[x + 1]) continue;
+      bCur[x] = bFrom[x] + (bTo[x] - bFrom[x]) * e;
+      bCur[x + 1] = bFrom[x + 1] + (bTo[x + 1] - bFrom[x + 1]) * e;
+      placeBase(i);
+    }
+    if (t >= 1) base.tweenStart = -1;
+  }
+  function resizeBase(force = false, moveDots = false) {
+    const width = Math.floor(baseWrap.clientWidth);
+    const height = Math.max(MIN_FIELD_H, Math.floor(baseWrap.clientHeight));
+    if (!width) return;
+    if (!force && base.geo && base.geo.width === width && Math.abs(base.geo.height - height) < 1) return;
+    base.geo = geometry(width, height, WORST, YES_AXIS[0]);
+    drawStatic(base.geo, false, baseField);
+    if (base.snap) moveBase(targets(base.snap, base.geo), moveDots && !reduced);
+  }
+
+  // The main chart's name: the bar it is running, or the reader's own rules.
+  function nameMain() {
+    const r = matchingRule();
+    setText(mainName, r ? r.label : sameAs(state.settings, WORK) && assumptionsUntouched() ? 'Tied to real work' : 'Your rules');
   }
 
   function writeNumbers(m, S) {
@@ -417,13 +528,13 @@ function mount(root, panel) {
   }
 
   // Pixel geometry of the field for a width and height, on the current scale.
-  function geometry(width, height) {
+  function geometry(width, height, S = state.settings, axisMax = state.axisMax) {
     const wide = width >= WIDE_FIELD;
     const r = wide ? 5.5 : 4.5;
     const step = 2 * r + 1; // center to center, dots side by side or stacked
     const plotTop = 20; // top of the band and the lane rule; labels sit above
     const base = height - 26; // the axis line; tick labels sit below
-    const scale = state.settings.scale;
+    const scale = S.scale;
     const laneLeft = 1;
     const laneRight = laneLeft + LANE_COLUMNS * step + 3;
     // On the yes scale the lane for people with no yes sits well clear of the axis's 0, so the
@@ -432,15 +543,14 @@ function mount(root, panel) {
     const x5 = width - r - 6;
     const span = x5 - x1;
     const perStar = span / 4;
-    const axisMax = state.axisMax;
     // Weighted yeses compound, so a few people run far ahead while most sit near 0. Spacing
     // their axis by square root spreads out the crowd near 0 and keeps everyone's order. Anyone
     // past the end waits at the end.
-    const root = rootAxis(state.settings);
+    const root = rootAxis(S);
     const share = (v) => Math.min(1, Math.max(0, v / axisMax));
     const yesX = root ? (v) => x1 + Math.sqrt(share(v)) * span : (v) => x1 + share(v) * span;
     return {
-      width, height, r, step, plotTop, base, laneLeft, laneRight, x1, x5, span, scale, axisMax, root,
+      width, height, r, step, plotTop, base, laneLeft, laneRight, x1, x5, span, scale, axisMax, root, weighted: weightedYeses(S),
       columns: COLUMNS_PER_STAR.find((n) => perStar / n >= 0.6 * step) ?? COLUMNS_PER_STAR[COLUMNS_PER_STAR.length - 1],
       bins: Math.max(1, Math.floor(span / step)), // yes scale: columns as wide as a dot
       bottom: base - r - 1.5, // center of the lowest dot in a stack
@@ -450,8 +560,9 @@ function mount(root, panel) {
     };
   }
 
-  function drawStatic(G, fadeLabels = false) {
-    svg.setAttribute('viewBox', `0 0 ${G.width} ${G.height}`);
+  function drawStatic(G, fadeLabels = false, F = mainField) {
+    const staticLayer = F.staticLayer;
+    F.svg.setAttribute('viewBox', `0 0 ${G.width} ${G.height}`);
     const labelY = G.plotTop - 7;
     // A label centered on the last tick would run past the right edge once it has a few
     // digits, so that one ends at the edge instead.
@@ -466,7 +577,7 @@ function mount(root, panel) {
         `<text class="lab-label" x="${G.width - 1}" y="${labelY}" text-anchor="end">${HIGH_BAR}+</text>`;
       for (let v = 1; v <= 5; v++) body += tick(G.x(v), v);
     } else {
-      const title = weightedYeses(state.settings) ? 'Weighted yeses' : 'Yeses received';
+      const title = G.weighted ? 'Weighted yeses' : 'Yeses received';
       body += `<text class="lab-label" x="${G.width - 1}" y="${labelY}" text-anchor="end">${title}</text>`;
       // Even ticks: on the square-root axis they read 0, 1, 4, 9 and 16 sixteenths of the end.
       // The end reads "or more", since anyone past it waits there.
@@ -492,7 +603,7 @@ function mount(root, panel) {
     }
     const half = G.starSize / 2;
     const scale = G.starSize / 24;
-    for (const n of nodes) {
+    for (const n of F.nodes) {
       n.circle.setAttribute('r', G.r);
       n.star.setAttribute('transform', `translate(${-half} ${-half}) scale(${scale})`);
     }
@@ -538,30 +649,6 @@ function mount(root, panel) {
       out[2 * i + 1] = G.bottom - Math.floor(k / LANE_COLUMNS) * lanePitch;
     });
     return out;
-  }
-
-  // The small line of the second number, round by round.
-  function drawSpark() {
-    if (!state.run) return;
-    const S = state.run.settings;
-    const T = TREND[S.scale];
-    const W = 96;
-    const H = 30;
-    spark.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const rounds = state.run.rounds;
-    const x = (round) => 2 + ((round - 1) / (rounds - 1)) * (W - 4);
-    const y = (v) => H - 3 - Math.min(1, Math.max(0, (v - T.min) / (T.max - T.min))) * (H - 6);
-    const points = (history) => history.map((h) => `${x(h.round).toFixed(1)},${y(T.value(h)).toFixed(1)}`).join(' ');
-    const history = state.snap ? state.snap.history : [];
-    const ghost = state.reference && state.reference.scale === S.scale && state.reference.key !== state.key ? state.reference.history : [];
-    ghostLine.setAttribute('points', points(ghost));
-    sparkLine.setAttribute('points', points(history));
-    const last = history[history.length - 1];
-    sparkDot.style.display = last ? '' : 'none';
-    if (last) {
-      sparkDot.setAttribute('cx', x(last.round).toFixed(1));
-      sparkDot.setAttribute('cy', y(T.value(last)).toFixed(1));
-    }
   }
 
   function place(i) {
@@ -611,7 +698,8 @@ function mount(root, panel) {
       nextRoundAt = now + state.pace;
     }
     if (tweenStart >= 0) tween(now);
-    if (state.playing || tweenStart >= 0) loop();
+    if (base.tweenStart >= 0) tweenBase(now);
+    if (state.playing || tweenStart >= 0 || base.tweenStart >= 0) loop();
   }
 
   /* ---------- Size ---------- */
@@ -643,9 +731,7 @@ function mount(root, panel) {
     const scale = state.settings.scale;
     if (scale === shownScale) return;
     shownScale = scale;
-    setText(secondLabel, SECOND[scale].label);
-    setText(legendStar, scale === 'yes' ? 'The top 10 by yeses' : 'The 10 you’d hire by score');
-    spark.setAttribute('aria-label', TREND[scale].title);
+    setText(legendStar, scale === 'yes' ? 'The top 10 by yeses' : 'The 10 rated highest');
     for (const a of ASSUMPTIONS) {
       const box = panel.querySelector(`[data-slider="${a.id}"]`);
       if (box) box.hidden = Boolean(a.scale) && a.scale !== scale;
@@ -680,7 +766,7 @@ function mount(root, panel) {
   }
 
   // A set of rules with our assumptions, as a new run at round 0: the worst rules for scene 4,
-  // a bar's rules in scene 6. The bars are our assumptions' averages, so a bar runs with them.
+  // a bar's rules in scene 5. The bars are our assumptions' averages, so a bar runs with them.
   function useRules(settings) {
     for (const { a, input, sync } of sliders) {
       state.values[a.id] = a.initial;
@@ -699,6 +785,7 @@ function mount(root, panel) {
     state.playing = false;
     startRun();
     if (redraw && geo) resize(true);
+    nameMain();
   }
 
   panel.querySelectorAll('.lab-seg input').forEach((input) => {
@@ -714,8 +801,17 @@ function mount(root, panel) {
     });
   });
 
+  // Replay: in scene 4 both charts start over together; elsewhere the main one does.
   $('[data-action="replay"]').addEventListener('click', () => {
     state.playing = false;
+    clearTimeout(startTimer);
+    if (state.scene === 'lab') {
+      startRun();
+      startBase();
+      idle();
+      startTimer = setTimeout(playBoth, reduced ? 0 : 260);
+      return;
+    }
     startRun();
     if (reduced) finishNow();
     else {
@@ -787,6 +883,7 @@ function mount(root, panel) {
       root.animate([{ transform: `translateY(${shift}px)` }, { transform: 'none' }], { duration: MOVE_MS, easing: 'cubic-bezier(.16, 1, .3, 1)' });
     }
     resize(false, true);
+    resizeBase(false, true);
     redrawSoon();
   }
   // The whole field again, axis, lane and every person, once the panel has settled: a browser
@@ -799,6 +896,7 @@ function mount(root, panel) {
   }
   function redrawAll() {
     resize(true, false);
+    resizeBase(true, false);
     for (let i = 0; i < N; i++) place(i);
   }
   // The panel opens from the scene's links and from the line under the bars; focus goes back
@@ -877,6 +975,7 @@ function mount(root, panel) {
       renderBars();
     }
     markRules();
+    nameMain();
     if (r) setLine(resultLine, ruleLine(r, m));
     else if (m) setLine(resultLine, `In the simulation, your rules find ${m.hits} of the 10 best in this run.`);
   }
@@ -952,9 +1051,9 @@ function mount(root, panel) {
     describeRules();
     placeRules();
   }
-  figuresData.then(buildRules).catch((err) => console.warn('Scene 6 kept its fallback because the rules chart could not be built.', err));
+  figuresData.then(buildRules).catch((err) => console.warn('Scene 5 kept its fallback because the rules chart could not be built.', err));
 
-  // Scene 6's bars: beside the lab on desktop, in the text column; on a phone, in the lab's
+  // Scene 5's bars: beside the lab on desktop, in the text column; on a phone, in the lab's
   // column, ahead of the dots (lab.css).
   const wide = window.matchMedia('(min-width: 960px)');
   const compareBeat = document.querySelector('.beat[data-beat="compare"]');
@@ -969,84 +1068,51 @@ function mount(root, panel) {
 
   /* ---------- How this works ---------- */
 
-  // Three plain steps above the lab. Beside the text they stay open. On a phone, while they are
-  // open they stand in for scene 4's intro and the key (lab.css), and they fold to one line once
-  // scene 4's first run has played, never before the reader has had about six seconds with them.
-  // The intro line then carries the run's result. A phone too short for the steps and a readable
-  // chart starts with them folded. The title opens and closes them, and a reader who has used it
-  // keeps their choice.
+  // Three plain steps above the lab. Beside the text they start open; on a phone, where both
+  // charts need the room, they start folded to one line. The title opens and closes them.
   const how = document.getElementById('lab-how');
   const howTitle = how && how.querySelector('.lab-how-title');
   const howBody = how && how.querySelector('.lab-how-body');
   let howToggle = null;
-  let howTouched = false;
-  let howFolded = false;
-  let howShownAt = 0;
-  let howTimer = 0;
   function setHow(open) {
     if (!how) return;
-    clearTimeout(howTimer);
-    howTimer = 0;
     how.classList.toggle('is-closed', !open);
-    scene.classList.toggle('is-how-open', open);
     if (howToggle) howToggle.setAttribute('aria-expanded', String(open));
     if (howBody) howBody.inert = !open;
   }
   if (howTitle) {
     howTitle.innerHTML = '<button type="button" class="lab-how-toggle" aria-expanded="true" aria-controls="lab-how-body">How this works</button>';
     howToggle = howTitle.firstElementChild;
-    howToggle.addEventListener('click', () => {
-      howTouched = true;
-      setHow(how.classList.contains('is-closed'));
-    });
+    howToggle.addEventListener('click', () => setHow(how.classList.contains('is-closed')));
   }
-  if (how && !wide.matches && window.innerHeight < 600) {
-    howFolded = true;
-    setHow(false);
-  } else setHow(true);
-  function foldHowSoon() {
-    if (!how || howFolded || howTouched || wide.matches) return;
-    howFolded = true;
-    const wait = Math.max(1200, 6000 - (performance.now() - howShownAt));
-    howTimer = setTimeout(() => setHow(false), wait);
-  }
+  setHow(wide.matches);
 
   /* ---------- The stage ---------- */
 
-  // Scene 4 plays the worst rules from round 0, each time it arrives, and scene 5 plays praise
-  // tied to real work the same way. Scene 6 compares every set of rules beside that run, with its
-  // bar pressed. Leaving the lab pauses it.
+  // Scene 4 plays both charts from round 0 each time it arrives: one-click likes above, praise
+  // tied to real work below. Scene 5 compares every set of rules against that baseline; a tap
+  // on a bar reruns the lower chart. Leaving the lab pauses it.
   function onScene({ id, previousId }) {
     state.scene = id;
-    if (id === 'lab' && !howShownAt) howShownAt = performance.now();
-    // A fold still waiting when the reader moves on happens at once, out of view.
-    if (id !== 'lab' && howTimer) setHow(false);
     if (id === 'lab' && previousId !== 'lab') {
-      closeRules(false);
-      useRules(WORST);
-      setLine(labBody, bodyIntro);
-      idle();
-      if (reduced) finishNow();
-      else startTimer = setTimeout(() => state.scene === 'lab' && play(), previousId ? 650 : 450);
-    } else if (id === 'fix' && previousId !== 'fix') {
-      // Scene 5 plays praise tied to real work from round 0, as scene 4 played the worst rules.
       closeRules(false);
       useRules(WORK);
       describeRules();
+      setLine(resultLine, ' ');
+      startBase();
       idle();
-      if (reduced) finishNow();
-      else startTimer = setTimeout(() => state.scene === 'fix' && play(), previousId ? 650 : 450);
+      startTimer = setTimeout(() => state.scene === 'lab' && playBoth(), reduced ? 0 : previousId ? 600 : 400);
     } else if (id === 'compare' && previousId !== 'compare') {
-      // Scene 6 starts from that finished run, with its bar pressed; a tap on a bar runs another.
-      if (previousId === 'fix' && sameAs(state.settings, WORK) && assumptionsUntouched()) {
-        if (state.run.done) describeRules();
+      if (previousId === 'lab' && sameAs(state.settings, WORK) && assumptionsUntouched()) {
+        clearTimeout(startTimer);
+        if (state.run.done && base.run && base.run.done) describeRules();
         else settle();
       } else {
         closeRules(false);
         useRules(WORK);
         settle();
       }
-    } else if (id !== 'lab' && id !== 'fix' && id !== 'compare') {
+    } else if (id !== 'lab' && id !== 'compare') {
       closeRules(false);
       pause();
     }
@@ -1064,24 +1130,30 @@ function mount(root, panel) {
   });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) pause(true);
-    else if (state.resumeOnShow && (state.scene === 'lab' || state.scene === 'fix' || state.scene === 'compare')) play();
+    else if (state.resumeOnShow && (state.scene === 'lab' || state.scene === 'compare')) play(state.pace);
   });
 
   // The field's size follows its scene: redraw in the same frame, so it never stretches.
   if ('ResizeObserver' in window) {
     new ResizeObserver(() => resize(false, Boolean(geo))).observe(fieldWrap);
+    new ResizeObserver(() => resizeBase(false, Boolean(base.geo))).observe(baseWrap);
   }
-  window.addEventListener('resize', () => resize());
+  window.addEventListener('resize', () => {
+    resize();
+    resizeBase();
+  });
 
   applyScale();
   applyAnchor();
   syncControls();
   resize(true);
+  resizeBase(true);
+  startBase();
   startRun();
   idle();
   root.classList.add('is-built');
   if (html.classList.contains('stage-ready') && html.dataset.scene !== undefined) {
-    onScene({ id: ['start', 'everywhere', 'guess', 'lab', 'fix', 'compare', 'vouched'][Number(html.dataset.scene)], previousId: null });
+    onScene({ id: ['start', 'everywhere', 'guess', 'lab', 'compare', 'vouched'][Number(html.dataset.scene)], previousId: null });
   }
 }
 
@@ -1115,22 +1187,19 @@ function sliderHtml(a, extra = '') {
   );
 }
 
-// The chart: two big numbers, a one-line key, the field with the round under it, and the line
-// on the last rule changed, which shows while "Try other rules" is open.
+// The charts: a one-line key, then two rows on one shared axis, each with its name and its
+// two numbers: one-click likes above, the rules being run below. Under them, the round, the line
+// on the last rule changed (while "Try other rules" is open) and the line on what was found.
 function labTemplate(N) {
+  const row = (id, name, hits, second) => `
+    <div class="lab-row" data-row="${id}">
+      <p class="lab-row-head"><span class="label lab-row-name"${id === 'main' ? ' data-name="main"' : ''}>${name}</span><span class="lab-row-stats"><span class="lab-row-num" data-num="${hits}">0</span><span class="label lab-row-of">of 10<span class="lab-row-wide"> best found</span></span><span class="label lab-row-second" data-num="${second}"> </span></span></p>
+      <div class="lab-field-wrap" data-wrap="${id}"><svg class="lab-field" data-field="${id}" role="img" aria-label="A dot plot of ${N} people by score."></svg></div>
+    </div>`;
   return `
-    <div class="lab-head">
-      <div class="lab-readout" data-readout="hits">
-        <p class="lab-readout-label label">Best people found</p>
-        <p class="lab-readout-value"><span class="lab-big" data-num="hits">0</span><span class="lab-of label">of 10</span></p>
-      </div>
-      <div class="lab-readout" data-readout="second">
-        <p class="lab-readout-label label">Average score</p>
-        <p class="lab-readout-value"><span class="lab-big" data-num="second"> </span><svg class="lab-spark" role="img" aria-label=""></svg></p>
-      </div>
-    </div>
-    <p class="lab-legend label"><span class="lab-legend-item">${keyGlyph('is-dot is-filled')}The 10 most skilled</span> <span class="lab-legend-item">${keyGlyph('is-star')}<span class="lab-legend-star">The 10 you’d hire by score</span></span></p>
-    <div class="lab-field-wrap"><svg class="lab-field" role="img" aria-label="A dot plot of ${N} people by score."></svg></div>
+    <p class="lab-legend label"><span class="lab-legend-item">${keyGlyph('is-dot is-filled')}The 10 most skilled</span> <span class="lab-legend-item">${keyGlyph('is-star')}<span class="lab-legend-star">The 10 rated highest</span></span></p>
+    ${row('base', 'One-click likes', 'base-hits', 'base-second')}
+    ${row('main', 'Tied to real work', 'hits', 'second')}
     <div class="lab-foot">
       <p class="lab-round label">Round 0 of 30</p>
       <button type="button" class="text-button label lab-replay" data-action="replay">Replay</button>

@@ -33,13 +33,13 @@
   <script nomodule>document.documentElement.classList.remove('js', 'stage-on');</script>
   <link rel="preload" href="fonts/Newsreader-normal-300-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/IBMPlexMono-normal-500.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/style.css?v=3">
-  <link rel="stylesheet" href="css/stage.css?v=3">
-  <link rel="stylesheet" href="css/charts.css?v=3">
-  <link rel="stylesheet" href="css/lab.css?v=3">
-  <script type="module" src="js/stage.js?v=3"></script>
-  <script type="module" src="js/charts.js?v=3"></script>
-  <script type="module" src="js/lab.js?v=3"></script>
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/stage.css?v=4">
+  <link rel="stylesheet" href="css/charts.css?v=4">
+  <link rel="stylesheet" href="css/lab.css?v=4">
+  <script type="module" src="js/stage.js?v=4"></script>
+  <script type="module" src="js/charts.js?v=4"></script>
+  <script type="module" src="js/lab.js?v=4"></script>
   <link rel="modulepreload" href="js/motion.js">
   <link rel="modulepreload" href="js/stars.js">
   <link rel="modulepreload" href="js/lab-model.js">
@@ -128,14 +128,9 @@
     <section class="scene scene-lab" id="lab" data-section="3" data-beat="lab" aria-label="The lab">
       <div class="scene-text">
         <div class="beat" data-beat="lab">
-          <h2 class="scene-title" id="h-lab" tabindex="-1" data-words>So the ratings stop finding the best people</h2>
-          <p class="scene-body line" id="lab-body" data-rise>Here are 80 simulated coworkers rating each other. Black dots are the 10 most skilled. Gold stars are the 10 you’d hire by score. You want them on the same&nbsp;people.</p>
+          <h2 class="scene-title" id="h-lab" tabindex="-1" data-words>One-click likes lose the best people. Real work finds&nbsp;them.</h2>
+          <p class="scene-body" id="lab-body" data-rise>The same 80 simulated coworkers, rating each other under two sets of rules at once. On top, every rating is a one-click like. Below, every rating has to point at real&nbsp;work.</p>
           <p class="label scene-links" data-rise><button type="button" class="text-button why-button" aria-controls="why-lab" aria-expanded="false">Why?</button></p>
-        </div>
-        <div class="beat" data-beat="fix" id="fix">
-          <h2 class="scene-title" id="h-fix" tabindex="-1" data-words>The fix: praise has to point at real work</h2>
-          <p class="scene-body" id="fix-note" data-rise>When a vouch has to point at something real the person made, it’s hard to fake. Here are the same 80 people when every rating points at real&nbsp;work.</p>
-          <p class="label scene-links" data-rise><button type="button" class="text-button why-button" aria-controls="why-fix" aria-expanded="false">Why?</button></p>
         </div>
         <div class="beat" data-beat="compare" id="compare">
           <h2 class="scene-title" id="h-compare" tabindex="-1" data-words>Which rules find the best people?</h2>
@@ -151,11 +146,8 @@
       <aside class="why-card" id="why-lab" aria-labelledby="why-lab-title" tabindex="-1">
         <div class="why-card-head"><p class="label why-card-title" id="why-lab-title">How the lab works</p><button type="button" class="text-button label" data-why-close>Close</button></div>
         <p>It’s a simulation written for this page: 80 coworkers, each with a hidden skill level, rate each other for 30 rounds. Half the ratings go to people they worked with and half to whoever a feed shows, and the feed favors whoever has the most. Each one-tap rating is judged against the current average, plus a little, so with nothing fixed to judge against, the scores climb.</p>
-        <p class="label why-card-src">Every rule and number: <a href="methods.html#m-lab">methods</a> <span aria-hidden="true">·</span> <a href="https://github.com/briangrover9-hue/vouched-drop/blob/main/js/lab-model.js">the&nbsp;code</a></p>
-      </aside>
-      <aside class="why-card" id="why-fix" aria-labelledby="why-fix-title" tabindex="-1">
-        <div class="why-card-head"><p class="label why-card-title" id="why-fix-title">Why real work is hard to fake</p><button type="button" class="text-button label" data-why-close>Close</button></div>
         <p>A vouch that points at real work can be checked against the work, so it says more about skill than about who is well known. Hiring research finds the same thing: a work sample, where a candidate does a piece of the real job, predicts job performance better than years of experience do (<a href="https://doi.org/10.1037/apl0000994">Sackett and colleagues, 2022</a>). In the lab, how firmly real work anchors a rating is our assumption, and “Try other rules” lets you change&nbsp;it.</p>
+        <p class="label why-card-src">Every rule and number: <a href="methods.html#m-lab">methods</a> <span aria-hidden="true">·</span> <a href="https://github.com/briangrover9-hue/vouched-drop/blob/main/js/lab-model.js">the&nbsp;code</a></p>
       </aside>
       <div class="scene-visual" data-rise>
         <div id="lab-root" class="lab" data-seed="374">
@@ -174,7 +166,7 @@
       </div>
     </section>
 
-    <!-- Scene 7: the close -->
+    <!-- Scene 6: the close -->
     <section class="scene scene-close" id="vouched" data-section="4" aria-labelledby="h-vouched">
       <div class="scene-text">
         <h2 class="scene-title" id="h-vouched" tabindex="-1" data-words>What this means for Vouched</h2>
@@ -200,15 +192,14 @@
   <aside class="lab-panel" id="lab-panel" aria-labelledby="lab-panel-title" hidden></aside>
 
   <nav class="frame-bottom" aria-label="Scenes">
-    <p class="frame-count label" aria-hidden="true"><span class="frame-now">01</span> / 07</p>
+    <p class="frame-count label" aria-hidden="true"><span class="frame-now">01</span> / 06</p>
     <ol class="frame-dots" role="list">
-      <li><button type="button" data-go="0" aria-label="Scene 1 of 7: Everyone’s a 4.8" aria-current="step"></button></li>
-      <li><button type="button" data-go="1" aria-label="Scene 2 of 7: everywhere"></button></li>
-      <li><button type="button" data-go="2" aria-label="Scene 3 of 7: one example, Airbnb"></button></li>
-      <li><button type="button" data-go="3" aria-label="Scene 4 of 7: the lab"></button></li>
-      <li><button type="button" data-go="4" aria-label="Scene 5 of 7: the fix"></button></li>
-      <li><button type="button" data-go="5" aria-label="Scene 6 of 7: which rules find the best people"></button></li>
-      <li><button type="button" data-go="6" aria-label="Scene 7 of 7: what this means for Vouched"></button></li>
+      <li><button type="button" data-go="0" aria-label="Scene 1 of 6: Everyone’s a 4.8" aria-current="step"></button></li>
+      <li><button type="button" data-go="1" aria-label="Scene 2 of 6: everywhere"></button></li>
+      <li><button type="button" data-go="2" aria-label="Scene 3 of 6: one example, Airbnb"></button></li>
+      <li><button type="button" data-go="3" aria-label="Scene 4 of 6: one-click likes against real work"></button></li>
+      <li><button type="button" data-go="4" aria-label="Scene 5 of 6: which rules find the best people"></button></li>
+      <li><button type="button" data-go="5" aria-label="Scene 6 of 6: what this means for Vouched"></button></li>
     </ol>
     <button type="button" class="frame-cue label" data-go="1" aria-label="Next scene">Scroll<svg viewBox="0 0 12 8" aria-hidden="true" focusable="false"><path d="M1 1.5l5 5 5-5"/></svg></button>
   </nav>

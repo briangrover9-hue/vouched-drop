@@ -49,7 +49,7 @@ const oneDecimal = (n) => (Math.round(n * 10) / 10).toFixed(1);
 const dec = (v) => v.toFixed(2).replace(/^0/, ''); // .54 style: two decimals, no leading zero
 
 // The stage's scene changes: the handler gets each one, and the current scene at once.
-const SCENE_IDS = ['start', 'everywhere', 'guess', 'lab', 'fix', 'compare', 'vouched'];
+const SCENE_IDS = ['start', 'everywhere', 'guess', 'lab', 'compare', 'vouched'];
 function onScene(handler) {
   document.addEventListener('stage:scene', (event) => handler(event.detail));
   if (html.dataset.scene !== undefined && html.classList.contains('stage-ready')) {
