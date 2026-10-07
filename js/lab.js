@@ -1,8 +1,9 @@
 // The trust lab: 80 coworkers vouching for each other, drawn as a dot plot that moves round by
 // round. The model lives in lab-model.js; this file draws it and wires up its controls.
 //
-// Scenes 4 and 5 share this one lab. Scene 4 plays one-click likes and praise tied to real work
-// side by side, on two charts with one axis. Scene 5 asks which rules find the best people: a bar for each set of rules, with its average over a dozen
+// Scenes 4 and 5 share this one lab. Scene 4 plays one-click likes and Vouched-style rules
+// side by side, on two charts with one axis. Scene 5 asks which rules find the best people: a
+// bar for each set of rules, with its average over a dozen
 // simulated companies, and a tap on a bar runs those rules on this company, with one plain line
 // on what they find and what they cost. "Try other rules" opens a frosted panel over the scene's
 // text, beside the chart on desktop and above it on a phone, so the chart stays in full view
@@ -27,8 +28,6 @@ const COMPARE_ROUND_MS = 120; // scene 4 plays both sets of rules at once, in ab
 // sixteenths of the end, so each of those ends divides by 16.
 const YES_AXIS = [4, 8, 12, 16, 20, 24, 32, 40, 60, 80, 100, 120, 160, 200, 240, 300, 400, 600, 800, 1000, 1200, 1600, 2000, 2400, 3000, 4000];
 const ROOT_AXIS = [16, 32, 48, 64, 80, 96, 128, 160, 192, 240, 320, 400, 480, 640, 800, 960, 1280, 1600, 1920, 2400, 3200, 4000];
-// Scene 4's lower chart plays praise tied to real work, the rules its headline names.
-const WORK = Object.freeze({ ...WORST, type: 'work' });
 const html = document.documentElement;
 
 // One or two plain sentences under the field for the switch just flipped: what it means and
@@ -373,9 +372,9 @@ function mount(root, panel) {
   // Scene 4's line once both charts have played out, from this run's own numbers.
   function narrate(m) {
     if (state.scene !== 'lab' || !resultLine || !base.run || !base.run.done) return;
-    if (!assumptionsUntouched() || !sameAs(state.settings, WORK) || m.hits === null) return;
+    if (!assumptionsUntouched() || !sameAs(state.settings, VOUCHED) || m.hits === null) return;
     const b = base.run.snapshot().metrics;
-    const text = `One-click likes piled ${b.top48} of 80 people at ${HIGH_BAR}+ and found ${b.hits} of the 10 best. Real work: ${m.top48} at ${HIGH_BAR}+, ${m.hits} found.`;
+    const text = `One-click likes piled ${b.top48} of 80 people at ${HIGH_BAR}+ and found ${b.hits} of the 10 best. Vouched-style rules found ${m.hits}.`;
     setLine(resultLine, text);
     setLine(verdict, text);
   }
@@ -488,7 +487,7 @@ function mount(root, panel) {
   // The main chart's name: the bar it is running, or the reader's own rules.
   function nameMain() {
     const r = matchingRule();
-    setText(mainName, r ? r.label : sameAs(state.settings, WORK) && assumptionsUntouched() ? 'Tied to real work' : 'Your rules');
+    setText(mainName, r ? r.label : sameAs(state.settings, VOUCHED) && assumptionsUntouched() ? 'Vouched-style rules' : 'Your rules');
   }
 
   function writeNumbers(m, S) {
@@ -1093,14 +1092,14 @@ function mount(root, panel) {
 
   /* ---------- The stage ---------- */
 
-  // Scene 4 plays both charts from round 0 each time it arrives: one-click likes above, praise
-  // tied to real work below. Scene 5 compares every set of rules against that baseline; a tap
+  // Scene 4 plays both charts from round 0 each time it arrives: one-click likes above,
+  // Vouched-style rules below. Scene 5 compares every set of rules against that baseline; a tap
   // on a bar reruns the lower chart. Leaving the lab pauses it.
   function onScene({ id, previousId }) {
     state.scene = id;
     if (id === 'lab' && previousId !== 'lab') {
       closeRules(false);
-      useRules(WORK);
+      useRules(VOUCHED);
       describeRules();
       setLine(resultLine, ' ');
       setLine(verdict, ' ');
@@ -1108,13 +1107,13 @@ function mount(root, panel) {
       idle();
       startTimer = setTimeout(() => state.scene === 'lab' && playBoth(), reduced ? 0 : previousId ? 600 : 400);
     } else if (id === 'compare' && previousId !== 'compare') {
-      if (previousId === 'lab' && sameAs(state.settings, WORK) && assumptionsUntouched()) {
+      if (previousId === 'lab' && sameAs(state.settings, VOUCHED) && assumptionsUntouched()) {
         clearTimeout(startTimer);
         if (state.run.done && base.run && base.run.done) describeRules();
         else settle();
       } else {
         closeRules(false);
-        useRules(WORK);
+        useRules(VOUCHED);
         settle();
       }
     } else if (id !== 'lab' && id !== 'compare') {
@@ -1204,7 +1203,7 @@ function labTemplate(N) {
   return `
     <p class="lab-legend label"><span class="lab-legend-item">${keyGlyph('is-dot is-filled')}The 10 most skilled</span> <span class="lab-legend-item">${keyGlyph('is-star')}<span class="lab-legend-star">The 10 rated highest</span></span></p>
     ${row('base', 'One-click likes', 'base-hits', 'base-second')}
-    ${row('main', 'Tied to real work', 'hits', 'second')}
+    ${row('main', 'Vouched-style rules', 'hits', 'second')}
     <div class="lab-foot">
       <p class="lab-round label">Round 0 of 30</p>
       <button type="button" class="text-button label lab-replay" data-action="replay">Replay</button>
