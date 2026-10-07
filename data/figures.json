@@ -212,6 +212,21 @@
     "chance": 1.25,
     "settings": [
       {
+        "id": "vouched",
+        "label": "Vouched-style rules",
+        "scale": "stars",
+        "settings": {
+          "scale": "stars",
+          "type": "work",
+          "vis": "blind",
+          "who": "said",
+          "feed": "reputation"
+        },
+        "hits": 8.33,
+        "finds": "Vouched-style rules find",
+        "cost": "every vouch points at real work, waits for both sides, says how you know them and counts by who gave it"
+      },
+      {
         "id": "likes",
         "label": "One-click likes",
         "scale": "stars",
@@ -289,21 +304,6 @@
         "cost": "each vouch has to point at something the person made"
       },
       {
-        "id": "together",
-        "label": "Everything together",
-        "scale": "stars",
-        "settings": {
-          "scale": "stars",
-          "type": "work",
-          "vis": "blind",
-          "who": "said",
-          "feed": "plain"
-        },
-        "hits": 8.42,
-        "finds": "everything together finds",
-        "cost": "every vouch points at real work, waits for both sides and says how you know them"
-      },
-      {
         "id": "linkedin",
         "label": "LinkedIn-style endorsements",
         "scale": "yes",
@@ -319,23 +319,6 @@
         "cost": "people say yes {n}% of the time",
         "costValue": 78,
         "costMetric": "yesRate"
-      },
-      {
-        "id": "vouched",
-        "label": "Vouched-style rules",
-        "scale": "yes",
-        "settings": {
-          "scale": "yes",
-          "type": "written",
-          "vis": "visible",
-          "who": "said",
-          "feed": "reputation"
-        },
-        "hits": 5.92,
-        "finds": "Vouched-style rules find",
-        "cost": "about {n} of 80 people get no yes at all",
-        "costValue": 20.2,
-        "costMetric": "unrated"
       }
     ]
   }

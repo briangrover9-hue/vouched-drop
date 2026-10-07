@@ -34,7 +34,7 @@ const html = document.documentElement;
 // One or two plain sentences under the field for the switch just flipped: what it means and
 // what to watch for. Where a switch works differently on the two scales, each has its own.
 const EXPLAIN = {
-  scale: () => 'Stars give a score from 1 to 5. A named yes is just “I vouch for this person,” like a vouch.',
+  scale: () => 'Stars give a score from 1 to 5. A named yes is just “I vouch for this person.”',
   type: {
     tap: (scale) =>
       scale === 'yes'
@@ -61,7 +61,7 @@ const EXPLAIN = {
   },
   preset: {
     worst: () => 'The worst rules: one-click stars, seen right away, in a feed that shows off the most rated.',
-    vouched: () => 'Vouched-style rules: a written, named yes that says how you know them, weighted by who gave it.',
+    vouched: () => 'Vouched-style rules: every vouch points at real work, both sides write before either sees the other’s, each says how they know the person, and a vouch counts by who gave it.',
   },
   assumption: () => 'You changed one of our guesses. The chart shows the same rules under it.',
 };
@@ -942,12 +942,11 @@ function mount(root, panel) {
   /* ---------- Which rules find the best people? ---------- */
 
   // One bar for each set of rules, with its average over the dozen simulated companies from
-  // data/figures.json (tools/lab-check.mjs keeps those equal to the model's). "Stars" or "A named
-  // yes" picks which bars show. A tap on a bar runs its rules on this company at a quick pace, and
+  // data/figures.json (tools/lab-check.mjs keeps those equal to the model's), best first. A tap on a bar runs its rules on this company at a quick pace, and
   // the line under the chart says what they find and what they cost. Once the run has finished,
   // the line adds this run's own number when it differs from the average, so the line never
   // gets ahead of the counter.
-  const rules = { list: [], scale: 'stars', selected: null, chance: 1.25 };
+  const rules = { list: [], selected: null, chance: 1.25 };
   const figuresData =
     (window.chartData && window.chartData.figures) ||
     fetch(new URL('../data/figures.json', import.meta.url)).then((res) => {
@@ -972,10 +971,6 @@ function mount(root, panel) {
     if (!rules.list.length || !resultLine) return;
     const r = matchingRule();
     rules.selected = r ? r.id : null;
-    if (r && r.scale !== rules.scale) {
-      rules.scale = r.scale;
-      renderBars();
-    }
     markRules();
     nameMain();
     // Scene 4's line belongs to the two charts, not to one rule (narrate writes it).
@@ -986,12 +981,11 @@ function mount(root, panel) {
 
   function markRules() {
     for (const bar of rulesBox.querySelectorAll('[data-rule]')) bar.setAttribute('aria-pressed', String(bar.dataset.rule === rules.selected));
-    for (const pill of rulesBox.querySelectorAll('[data-scale]')) pill.setAttribute('aria-pressed', String(pill.dataset.scale === rules.scale));
   }
 
   function renderBars(grow = false) {
     const list = rulesBox.querySelector('.rules-bars');
-    const shownRules = rules.list.filter((r) => r.scale === rules.scale).sort((a, b) => b.hits - a.hits);
+    const shownRules = [...rules.list].sort((a, b) => b.hits - a.hits);
     list.innerHTML = shownRules
       .map(
         (r) =>
@@ -1027,29 +1021,20 @@ function mount(root, panel) {
       'beforeend',
       `<div class="rules-head">` +
         `<p class="label rules-title" id="rules-title">In our simulation</p>` +
-        `<div class="rules-pills" role="group" aria-label="Show the rules for">` +
-        `<button type="button" class="rules-pill" data-scale="stars" aria-pressed="true">Stars</button>` +
-        `<button type="button" class="rules-pill" data-scale="yes" aria-pressed="false">A named yes</button>` +
-        `</div></div>` +
+        `</div>` +
         `<div class="rules-chart" style="--guess:${(rules.chance / 10).toFixed(4)}">` +
         `<p class="rules-guess label" aria-hidden="true"><span>Guessing</span></p>` +
         `<ol class="rules-bars" role="list"></ol>` +
         `</div>` +
         // The bars are the model's output, not a measurement of any real product.
-        `<p class="rules-caveat">These are simulated, not measured. The direction of each effect comes from research; the sizes are our guesses. Change them under <button type="button" class="text-button" data-action="open-rules" aria-controls="lab-panel" aria-expanded="false">Try other rules</button>.</p>` +
-        `<p class="label rules-note">Of the 10 most skilled, how many the top 10 finds, on average across 12 simulated companies. Guessing finds about 1.</p>`,
+        `<p class="rules-caveat">These are simulated, not measured. The direction of each effect comes from research; the sizes are our guesses. Change them under <button type="button" class="text-button" data-action="open-rules" aria-controls="lab-panel" aria-expanded="false">Try other rules</button>.</p>`,
     );
     rulesBox.addEventListener('click', (event) => {
       const target = event.target instanceof Element ? event.target : null;
       const bar = target && target.closest('[data-rule]');
-      const pill = target && target.closest('[data-scale]');
       const open = target && target.closest('[data-action="open-rules"]');
       if (open) openRules(open);
       else if (bar) runRule(bar.dataset.rule);
-      else if (pill && pill.dataset.scale !== rules.scale) {
-        rules.scale = pill.dataset.scale;
-        renderBars(true);
-      }
     });
     renderBars();
     describeRules();

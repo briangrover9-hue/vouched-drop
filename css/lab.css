@@ -678,6 +678,16 @@
     display: none;
   }
 }
+/* Short laptop windows: scene 5's bars sit a little closer so the column fits. */
+@media (min-width: 960px) and (max-height: 800px) {
+  .rules-bar {
+    min-height: 28px;
+    padding-block: 1px;
+  }
+  .rules {
+    gap: 8px;
+  }
+}
 /* A phone too short for the steps and a readable chart keeps scene 4's intro, which says the
    same in a sentence, and the steps give way. */
 @media (max-width: 959.98px) and (max-height: 599.98px) {
@@ -702,6 +712,10 @@
   html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .rules-caveat {
     font-size: 0.875rem;
     line-height: 1.35;
+  }
+  /* The answer line already gives this run's own count. */
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .lab-row[data-row="main"] {
+    display: none;
   }
 }
 

@@ -22,11 +22,11 @@
   <link rel="icon" href="assets/star.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preload" href="fonts/Newsreader-normal-300-700.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/style.css?v=5">
-  <link rel="stylesheet" href="css/charts.css?v=5">
-  <link rel="stylesheet" href="css/methods.css?v=5">
-  <script type="module" src="js/charts.js?v=5"></script>
-  <script type="module" src="js/methods.js?v=5"></script>
+  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/charts.css?v=6">
+  <link rel="stylesheet" href="css/methods.css?v=6">
+  <script type="module" src="js/charts.js?v=6"></script>
+  <script type="module" src="js/methods.js?v=6"></script>
   <link rel="modulepreload" href="js/motion.js">
   <link rel="modulepreload" href="js/stars.js">
   <script>
@@ -98,7 +98,7 @@
               <li><strong>Visible or blind.</strong> A visible star rating is pulled 40 percent toward what the other person last gave the rater, and shades up more (0.12 stars) than a blind one (0.05). A visible yes makes a yes back easier: when the other person last said yes to the giver, the giver’s bar drops by half a standard deviation.</li>
               <li><strong>How they know you.</strong> When a vouch says how the giver knows you, a vouch from someone who never worked with you counts a quarter as much.</li>
               <li><strong>Feed.</strong> A feed ranked by count shows people more often the more vouches they have. A feed ranked by who vouched weights each vouch by the giver’s track record, meaning how the people they vouched for (with a yes, or four or five stars) have turned out, which the model reveals a little each round with noise; that weighting sets the scores too, and a record built on few vouches counts for less. The track record is our stand-in for how Vouched would measure reputation. In either ranked feed, a person’s place in it sways how others judge them, by the same amount for every kind of vouch. A plain feed ranks no one.</li>
-              <li><strong>Measures.</strong> “At 4.8 or above” counts people whose score is at least 4.8. “Top 10 by score” counts how many of the 10 highest scores or standings belong to the 10 most skilled people; chance alone gives about one. Ties are broken at random, once per run, and people with no vouches rank last. The lab shows one simulated company, world 374, picked from 600. Its first run keeps every result the text describes (the worst setting finds about half, tying ratings to work finds the most of any single switch, and on the yes scale a track record beats a raw count), and each of the eight sets of rules in scene 5 finds within one of its average there. On its first run the worst setting finds 5 of the 10 most skilled and tying ratings to work finds 7; the table below gives the averages, which are what scene 5’s bars show.</li>
+              <li><strong>Measures.</strong> “At 4.8 or above” counts people whose score is at least 4.8. “Top 10 by score” counts how many of the 10 highest scores or standings belong to the 10 most skilled people; chance alone gives about one. Ties are broken at random, once per run, and people with no vouches rank last. The lab shows one simulated company, world 374, picked from 600. Its first run keeps every result the text describes (the worst setting finds about half, tying ratings to work finds the most of any single switch, and on the yes scale a track record beats a raw count), and each of the seven sets of rules in scene 5 finds within one of its average there. On its first run the worst setting finds 5 of the 10 most skilled and tying ratings to work finds 7; the table below gives the averages, which are what scene 5’s bars show.</li>
               <li><strong>The chart.</strong> On the stars scale the dots sit by score, from 1 to 5. On the yes scale they sit by standing, on an axis that ends at a round number at or above the 95th percentile of standings, so the few people far ahead wait at its end, marked “+”, instead of squeezing everyone else toward 0. Weighted yeses compound, so their axis is spaced by square root: its evenly spaced ticks read 0, 1, 4, 9 and 16 sixteenths of the end. People with no vouches, or no yes, sit in their own lane at the left.</li>
             </ul>
           </div>
@@ -115,12 +115,13 @@
               <tr><th scope="row">Feed ranks nothing, the rest as worst</th><td>5.25</td><td>3.5 to 4.4</td><td>0</td></tr>
               <tr><th scope="row">Feed ranks by who vouched, the rest as worst</th><td>4.67</td><td>3.5 to 4.4</td><td>0</td></tr>
               <tr><th scope="row">Tied to work, after both write, said, feed ranks nothing</th><td>8.42</td><td>3.2 to 3.2</td><td>0</td></tr>
+              <tr><th scope="row">Vouched-style rules: tied to work, after both write, said, feed by who vouched</th><td>8.33</td><td>3.2 to 3.3</td><td>0</td></tr>
               <tr><th scope="row">LinkedIn-style endorsements: named yes, one tap, right away, not said, feed by count</th><td>2.42</td><td>78% yes</td><td>0</td></tr>
-              <tr><th scope="row">Vouched-style rules: named yes, written, right away, said, feed by who vouched</th><td>5.92</td><td>64% yes</td><td>20.2</td></tr>
-              <tr><th scope="row">Vouched-style, feed by count</th><td>3.75</td><td>64% yes</td><td>21.4</td></tr>
-              <tr><th scope="row">Vouched-style, feed ranks nothing</th><td>6.17</td><td>37% yes</td><td>5.1</td></tr>
-              <tr><th scope="row">Vouched-style, tied to work</th><td>6.67</td><td>69% yes</td><td>32.4</td></tr>
-              <tr><th scope="row">Vouched-style, tied to work, feed ranks nothing</th><td>6.25</td><td>37% yes</td><td>13.8</td></tr>
+              <tr><th scope="row">Named yes: written, right away, said, feed by who vouched</th><td>5.92</td><td>64% yes</td><td>20.2</td></tr>
+              <tr><th scope="row">Named yes, feed by count</th><td>3.75</td><td>64% yes</td><td>21.4</td></tr>
+              <tr><th scope="row">Named yes, feed ranks nothing</th><td>6.17</td><td>37% yes</td><td>5.1</td></tr>
+              <tr><th scope="row">Named yes, tied to work</th><td>6.67</td><td>69% yes</td><td>32.4</td></tr>
+              <tr><th scope="row">Named yes, tied to work, feed ranks nothing</th><td>6.25</td><td>37% yes</td><td>13.8</td></tr>
               <tr><th scope="row">Picking 10 people at random</th><td>1.25</td><td></td><td></td></tr>
             </tbody>
           </table>
@@ -204,7 +205,7 @@
           </figure>
 
           <h3 id="h-holds">What keeps a vouch honest</h3>
-          <p>The research points to four rules. The Vouched concept is built on them.</p>
+          <p>The research points to four rules. The Vouched concept is built on them: challenges, where the work itself is scored, and blind vouches from people who worked with you.</p>
           <ol class="rules" role="list">
             <li>
               <h4>A vouch stays hidden until both people have written theirs</h4>
@@ -244,15 +245,15 @@
             </li>
             <li>
               <h4>It names something specific the person did</h4>
-              <p>A specific claim ties praise to the work itself. In Vouched, a vouch names what the person did.</p>
+              <p>A specific claim ties praise to the work itself. In Vouched, a challenge is real work scored against a fixed rubric, and a vouch describes what the person did.</p>
             </li>
             <li>
               <h4>It says how you know them</h4>
-              <p>Expedia only lets guests who booked a stay review a hotel. TripAdvisor lets anyone. Comparing the same hotels, economists found more signs of fake reviews on TripAdvisor, most of all where a hotel had a reason to fake them. LinkedIn began highlighting endorsements from colleagues in 2016. In Vouched, every vouch says how you know the person.</p>
+              <p>Expedia only lets guests who booked a stay review a hotel. TripAdvisor lets anyone. Comparing the same hotels, economists found more signs of fake reviews on TripAdvisor, most of all where a hotel had a reason to fake them. LinkedIn began highlighting endorsements from colleagues in 2016. In Vouched, only people who worked with you can vouch.</p>
             </li>
             <li>
               <h4>It costs the giver something</h4>
-              <p>Scarce signals keep their meaning, as the roses suggest. The simplest cost is your name. In Vouched, every vouch carries the name of the person who gave it.</p>
+              <p>Scarce signals keep their meaning, as the roses suggest. The simplest cost is your name. In Vouched, every vouch carries the giver’s name, and a false vouch costs them.</p>
             </li>
           </ol>
           <p>One more finding applies to networks that rank people. A feed that ranks by raw count hands the gains to whoever is already ahead. In the lab, ranking by the track record of who said yes finds more of the best people than ranking by count.</p>

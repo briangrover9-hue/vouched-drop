@@ -6,7 +6,7 @@
 // assumption. The methods section of the page describes the same rules.
 //
 // Two scales: stars (a 1 to 5 rating) and yes (a named yes, with no way to
-// say no, only silence, as in the Vouched concept). A vouch can say how the voucher knows
+// say no, only silence). A vouch can say how the voucher knows
 // you, and the feed can rank people by how many vouches they have, by the
 // track record of the people who vouched for them, or not at all.
 //
@@ -74,10 +74,13 @@ export const CHOICES = deepFreeze({
 
 export const WORST = Object.freeze({ scale: 'stars', type: 'tap', vis: 'visible', who: 'anyone', feed: 'count' });
 export const BEST = Object.freeze({ scale: 'stars', type: 'work', vis: 'blind', who: 'said', feed: 'plain' });
-// The settings closest to the Vouched concept: named vouches with a reason,
-// public, saying how you know the person, lists ranked partly by the
-// reputation behind them.
-export const VOUCHED = Object.freeze({ scale: 'yes', type: 'written', vis: 'visible', who: 'said', feed: 'reputation' });
+// A named yes with a reason, public, saying how you know the person, lists ranked
+// partly by the reputation behind them.
+export const NAMED_YES = Object.freeze({ scale: 'yes', type: 'written', vis: 'visible', who: 'said', feed: 'reputation' });
+// The Vouched concept: every vouch points at real work (a scored challenge), both sides write
+// before either sees the other's, each says how they know the person, and a vouch counts by the
+// giver's track record.
+export const VOUCHED = Object.freeze({ scale: 'stars', type: 'work', vis: 'blind', who: 'said', feed: 'reputation' });
 
 // The measures: a "top 10" has 10 people, and the high bar is 4.8 stars.
 export const TOP_N = 10;

@@ -33,13 +33,13 @@
   <script nomodule>document.documentElement.classList.remove('js', 'stage-on');</script>
   <link rel="preload" href="fonts/Newsreader-normal-300-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/IBMPlexMono-normal-500.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/style.css?v=5">
-  <link rel="stylesheet" href="css/stage.css?v=5">
-  <link rel="stylesheet" href="css/charts.css?v=5">
-  <link rel="stylesheet" href="css/lab.css?v=5">
-  <script type="module" src="js/stage.js?v=5"></script>
-  <script type="module" src="js/charts.js?v=5"></script>
-  <script type="module" src="js/lab.js?v=5"></script>
+  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/stage.css?v=6">
+  <link rel="stylesheet" href="css/charts.css?v=6">
+  <link rel="stylesheet" href="css/lab.css?v=6">
+  <script type="module" src="js/stage.js?v=6"></script>
+  <script type="module" src="js/charts.js?v=6"></script>
+  <script type="module" src="js/lab.js?v=6"></script>
   <link rel="modulepreload" href="js/motion.js">
   <link rel="modulepreload" href="js/stars.js">
   <link rel="modulepreload" href="js/lab-model.js">
@@ -135,9 +135,9 @@
         </div>
         <div class="beat" data-beat="compare" id="compare">
           <h2 class="scene-title" id="h-compare" tabindex="-1" data-words>Which rules find the best people?</h2>
-          <p class="scene-body" id="compare-note" data-rise>Each bar is a set of rules, averaged over 12 simulated companies. Tap one to run it on the same 80&nbsp;people.</p>
+          <p class="scene-body" id="compare-note" data-rise>Each bar shows how many of the 10 most skilled the top 10 finds, on average across 12 simulated companies. Tap one to run it on the same 80&nbsp;people.</p>
           <div class="rules" id="rules" data-rise aria-labelledby="rules-title">
-            <p class="fallback">This chart needs JavaScript. In our simulation, of the 10 most skilled people, the top 10 by score finds about 8 with everything together, about 6 when praise is tied to real work or with Vouched-style rules, about 5 with written reviews, hidden reviews or saying how you know someone, about 5 with one-click likes, and about 2 with LinkedIn-style endorsements. Guessing finds about 1. These are simulated, not measured.</p>
+            <p class="fallback">This chart needs JavaScript. In our simulation, of the 10 most skilled people, the top 10 by score finds about 8 with Vouched-style rules, about 6 when praise is tied to real work, about 5 with written reviews, hidden reviews or saying how you know someone, about 5 with one-click likes, and about 2 with LinkedIn-style endorsements. Guessing finds about 1. These are simulated, not measured.</p>
           </div>
           <p class="beat-links label scene-links" data-rise>
             <button type="button" class="text-button" id="rules-open" aria-controls="lab-panel" aria-expanded="false">Try other rules</button>
@@ -172,13 +172,13 @@
       <div class="scene-text">
         <h2 class="scene-title" id="h-vouched" tabindex="-1" data-words>What this means for Vouched</h2>
         <p class="scene-body" data-rise>Most ratings, referrals and endorsements count every vote the same. People don’t. A yes from someone whose judgment you trust, written with care, is worth more than a pile of&nbsp;taps.</p>
-        <p class="scene-body" data-rise>Vouched is a concept built around that: named yeses, and who said yes and why. The next step is tying each yes to the work&nbsp;itself.</p>
+        <p class="scene-body" data-rise>Vouched is a concept built on two kinds of proof: challenges, where the work itself is scored, and blind vouches from people you actually worked with, counted by each voucher’s track&nbsp;record.</p>
         <p class="label scene-links" data-rise><button type="button" class="text-button why-button" aria-controls="why-vouched" aria-expanded="false">Why?</button></p>
         <p class="byline label" data-rise>By <a href="https://www.linkedin.com/in/briantgrover">Brian Grover</a> <span aria-hidden="true">·</span> <a href="https://x.com/briantgrover">@briantgrover</a> <span aria-hidden="true">·</span> <a href="methods.html#methods">Methods and sources</a></p>
       </div>
       <aside class="why-card" id="why-vouched" aria-labelledby="why-vouched-title" tabindex="-1">
         <div class="why-card-head"><p class="label why-card-title" id="why-vouched-title">What Vouched would do</p><button type="button" class="text-button label" data-why-close>Close</button></div>
-        <p>Vouched is a concept, not a product you can sign up for. Each vouch is a named yes for one person, written in your own words, that says how you know them. Vouches count by the track record of who gave them, so a yes from someone whose earlier picks held up weighs more. In the lab that is the “Vouched-style rules” bar, and the next step, tying each vouch to the work, is the “Tied to work” switch under Try other&nbsp;rules.</p>
+        <p>Vouched is a concept, not a product you can sign up for. Challenges are real work, scored by trained reviewers against a fixed rubric. Vouches come only from people who worked with you, and each one describes the work without seeing what you claimed. A claim stands when the accounts line up, and a false vouch costs the person who gave it. In the lab, that’s the “Vouched-style rules” bar: every vouch points at real work, both sides write before either sees the other’s, each says how they know the person, and a vouch counts by who gave&nbsp;it.</p>
       </aside>
       <div class="scene-visual" data-rise>
         <div class="big-rating">

@@ -9,12 +9,12 @@
 // 3. Assertions, which fail loudly: determinism, snapshots that never change
 //    a run, overrides, and the directions the page relies on.
 import { readFileSync } from 'node:fs';
-import { createWorld, createRun, DEFAULTS, WORST, BEST, VOUCHED } from '../js/lab-model.js';
+import { createWorld, createRun, DEFAULTS, WORST, BEST, NAMED_YES, VOUCHED } from '../js/lab-model.js';
 
 const WORLDS = [11, 22, 33, 44, 55, 66, 77, 88, 99, 111, 122, 133];
 const PAGE_WORLD = Number(process.env.PAGE_WORLD) || 374; // the world the lab shows (#lab-root, scenes 4 and 5): of worlds 1 to 600 whose first run keeps every result the text describes, one where each of the eight settings in scene 5's bars lands within one of its average, with the jump from one-click likes to work closest to the average jump
 const LINKEDIN = Object.freeze({ scale: 'yes', type: 'tap', vis: 'visible', who: 'anyone', feed: 'count' });
-const VOUCHED_COUNT = Object.freeze({ ...VOUCHED, feed: 'count' });
+const NAMED_YES_COUNT = Object.freeze({ ...NAMED_YES, feed: 'count' });
 
 // Prototype averages for the same rows: round-1 and final average, then 4.8+
 // (stars) or the final yes rate (yes), unrated, hits. The prototype averaged
@@ -33,9 +33,10 @@ const ROWS = [
   ['Only switch flipped: reputation feed', { ...WORST, feed: 'reputation' }, [3.46, 4.41, 31, 0, 4.4]],
   ['Best: stars, tied to work, blind, said, plain', BEST, [3.18, 3.18, 4, 0, 8.4]],
   ['LinkedIn-like: yes, one tap, visible, anyone, count', LINKEDIN, [null, null, 0.78, 0, 2.5]],
-  ['Vouched-like, feed ranked by count', VOUCHED_COUNT, [null, null, 0.64, 21.4, 3.7]],
-  ['Vouched-like, feed ranked by reputation', VOUCHED, [null, null, 0.64, 20.2, 5.9]],
-  ['Vouched-like, feed that ranks no one', { ...VOUCHED, feed: 'plain' }, [null, null, null, null, null]],
+  ['Named yes, feed ranked by count', NAMED_YES_COUNT, [null, null, 0.64, 21.4, 3.7]],
+  ['Named yes, feed ranked by reputation', NAMED_YES, [null, null, 0.64, 20.2, 5.9]],
+  ['Named yes, feed that ranks no one', { ...NAMED_YES, feed: 'plain' }, [null, null, null, null, null]],
+  ['Vouched: stars, tied to work, blind, said, reputation', VOUCHED, [null, null, null, null, null]],
 ];
 
 let failures = 0;
@@ -94,15 +95,15 @@ for (const [label, settings] of ROWS) {
 
 console.log('\n3. Checks\n');
 {
-  for (const settings of [WORST, VOUCHED, BEST]) {
-    const name = settings === WORST ? 'WORST' : settings === VOUCHED ? 'VOUCHED' : 'BEST';
+  for (const settings of [WORST, NAMED_YES, BEST]) {
+    const name = settings === WORST ? 'WORST' : settings === NAMED_YES ? 'NAMED_YES' : 'BEST';
     const a = JSON.stringify(runAll(PAGE_WORLD, settings, 1));
     const b = JSON.stringify(runAll(PAGE_WORLD, settings, 1));
     check(a === b, `${name}: the same world seed, settings and run seed give identical snapshots for all 30 rounds`);
     check(a !== JSON.stringify(runAll(PAGE_WORLD, settings, 2)), `${name}: a different run seed gives a different run`);
   }
 
-  for (const settings of [WORST, VOUCHED]) {
+  for (const settings of [WORST, NAMED_YES]) {
     const quiet = createRun(createWorld(PAGE_WORLD), settings, 1);
     while (!quiet.done) quiet.step();
     const noisy = createRun(createWorld(PAGE_WORLD), settings, 1);
@@ -133,11 +134,11 @@ console.log('\n3. Checks\n');
 
   const starsZero = createRun(createWorld(PAGE_WORLD), WORST, 1).snapshot();
   check(starsZero.round === 0 && starsZero.metrics.mean === null && starsZero.metrics.unrated === 80 && starsZero.history.length === 0, 'stars round 0: no scores, 80 unrated, empty history');
-  const yesZero = createRun(createWorld(PAGE_WORLD), VOUCHED, 1).snapshot();
+  const yesZero = createRun(createWorld(PAGE_WORLD), NAMED_YES, 1).snapshot();
   check(yesZero.metrics.meanYeses === 0 && yesZero.metrics.yesCount === 0 && yesZero.metrics.yesRate === null && yesZero.metrics.top48 === null, 'yes round 0: no yeses, no yes rate, no 4.8+ count');
   // "Yeses per person" counts yeses; standing weights them. With a count feed and vouches
   // that say how the giver knows you, a stranger's yes counts a quarter in standing only.
-  const saidCount = runAll(PAGE_WORLD, { ...VOUCHED, feed: 'count' }).at(-1).metrics;
+  const saidCount = runAll(PAGE_WORLD, { ...NAMED_YES, feed: 'count' }).at(-1).metrics;
   const total = saidCount.yesCount * 80;
   check(Math.abs(total - Math.round(total)) < 1e-9 && saidCount.meanYeses < saidCount.yesCount, `yes scale: yeses per person is a plain count (${saidCount.yesCount.toFixed(1)}), and the weighted standing is lower (${saidCount.meanYeses.toFixed(1)})`);
 
@@ -162,7 +163,7 @@ console.log('\n3. Checks\n');
     check(worst[0] < 3.7, `${where}: the worst setting starts low, round-1 average ${worst[0].toFixed(2)} (below 3.7)`);
     check(worst[1] >= worst[0] + 0.6, `${where}: and drifts up visibly, to ${worst[1].toFixed(2)} (at least 0.6 higher)`);
     check(best[4] > worst[4], `${where}: the best setting finds more of the 10 most skilled than the worst (${best[4].toFixed(1)} against ${worst[4].toFixed(1)})`);
-    check(reputation[4] > count[4], `${where}: Vouched-like with the reputation feed finds more of them than with the count feed (${reputation[4].toFixed(1)} against ${count[4].toFixed(1)})`);
+    check(reputation[4] > count[4], `${where}: A named yes with the reputation feed finds more of them than with the count feed (${reputation[4].toFixed(1)} against ${count[4].toFixed(1)})`);
     check(linkedin[2] > 0.7, `${where}: the LinkedIn-like yes rate ends above 0.7 (${linkedin[2].toFixed(2)})`);
     const work = rows.get(ROWS[1][0]);
     const otherSingles = Math.max(...[2, 3, 4, 5, 6].map((i) => rows.get(ROWS[i][0])[4]));
@@ -187,8 +188,8 @@ console.log('\n3. Checks\n');
   // people with no yes than written ones, with a ranked feed (about 33 of 80)
   // and without one (about 14).
   {
-    const workRanked = summarize(WORLDS, { ...VOUCHED, type: 'work' });
-    const workPlain = summarize(WORLDS, { ...VOUCHED, type: 'work', feed: 'plain' });
+    const workRanked = summarize(WORLDS, { ...NAMED_YES, type: 'work' });
+    const workPlain = summarize(WORLDS, { ...NAMED_YES, type: 'work', feed: 'plain' });
     const written = averages.get(ROWS[10][0]);
     const writtenPlain = averages.get(ROWS[11][0]);
     check(workRanked[3] > written[3] && workRanked[3] >= 28 && workRanked[3] <= 38, `12-world average: tied to work on the yes scale leaves about 33 with no yes in a ranked feed (${workRanked[3].toFixed(1)}, against ${written[3].toFixed(1)} written)`);
@@ -226,8 +227,8 @@ console.log('\n3. Checks\n');
     const written = averages.get(ROWS[10][0]);
     const writtenPlain = averages.get(ROWS[11][0]);
     const reflexive = { autoYes: { work: DEFAULTS.autoYes.written } };
-    const ranked = summarize(WORLDS, { ...VOUCHED, type: 'work' }, reflexive);
-    const plain = summarize(WORLDS, { ...VOUCHED, type: 'work', feed: 'plain' }, reflexive);
+    const ranked = summarize(WORLDS, { ...NAMED_YES, type: 'work' }, reflexive);
+    const plain = summarize(WORLDS, { ...NAMED_YES, type: 'work', feed: 'plain' }, reflexive);
     check(Math.abs(ranked[3] - written[3]) <= 3 && Math.abs(plain[3] - writtenPlain[3]) <= 3, `12-world average: with written's reflexive yeses, tied to work leaves ${ranked[3].toFixed(1)} and ${plain[3].toFixed(1)} with no yes, close to written's ${written[3].toFixed(1)} and ${writtenPlain[3].toFixed(1)}`);
   }
 }
