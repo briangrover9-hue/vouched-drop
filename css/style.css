@@ -290,10 +290,12 @@ a {
 .line > .line-copy {
   grid-area: 1 / 1;
   opacity: 0;
-  transition: opacity var(--fade) var(--ease);
+  transition: opacity var(--press) var(--ease);
 }
+/* The old words leave first, then the new ones fade in, so two lines never show at once. */
 .line > .line-copy.is-shown {
   opacity: 1;
+  transition: opacity var(--fade) var(--ease) 180ms;
 }
 
 /* The paper's grain: a speckle of ink over everything, its darkest specks at about 5%, that

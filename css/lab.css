@@ -142,6 +142,47 @@
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
+/* Beside the charts the steps sit in the text column, where they read at body size, smaller on
+   a short screen so the column still fits. */
+@media (min-width: 960px) {
+  .beat .lab-how-steps {
+    gap: 14px;
+  }
+  .beat .lab-how-steps li {
+    grid-template-columns: 44px minmax(0, 1fr);
+    column-gap: 14px;
+    font-size: clamp(0.9375rem, 2.1vh, 1.1875rem);
+    line-height: 1.45;
+  }
+  .beat .lab-how-icon {
+    width: 44px;
+    height: 28px;
+  }
+}
+/* Scene 4's verdict: once both charts have run, what they found, in the text column beside
+   them. Its room is held from the start, so nothing moves when it arrives. */
+.lab-verdict {
+  display: none;
+}
+@media (min-width: 960px) {
+  html.stage-on .lab-verdict {
+    display: grid;
+    min-height: calc(1.3em * 3);
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(1.125rem, 2.6vh, 1.5rem);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  html.stage-on .scene-lab[data-beat="lab"] .lab-result {
+    display: none;
+  }
+  /* Replay is then the last thing beside the text; its tap area stays clear of the counter. */
+  html.stage-on .scene-lab[data-beat="lab"] .lab-foot {
+    margin-bottom: 12px;
+  }
+}
 /* A gold star on one of the best, drawn as in the field. */
 .lab-how-icon .is-hit {
   stroke: var(--ink);

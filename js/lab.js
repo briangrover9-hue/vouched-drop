@@ -155,6 +155,9 @@ function mount(root, panel) {
   const secondNum = $('[data-num="second"]');
   const anchorBox = $('[data-slider="anchor"]');
   const resultLine = $('.lab-result');
+  // Beside the charts, scene 4's verdict sits in its text column (the line under the charts
+  // carries it on a phone, and for screen readers).
+  const verdict = document.getElementById('lab-verdict');
 
   // Static layer (axis, band, lane) and one reusable node per person. People
   // sit in three layers so filled dots draw above hollow ones and stars above both.
@@ -372,10 +375,9 @@ function mount(root, panel) {
     if (state.scene !== 'lab' || !resultLine || !base.run || !base.run.done) return;
     if (!assumptionsUntouched() || !sameAs(state.settings, WORK) || m.hits === null) return;
     const b = base.run.snapshot().metrics;
-    setLine(
-      resultLine,
-      `One-click likes piled ${b.top48} of 80 people at ${HIGH_BAR}+ and found ${b.hits} of the 10 best. Real work: ${m.top48} at ${HIGH_BAR}+, ${m.hits} found.`,
-    );
+    const text = `One-click likes piled ${b.top48} of 80 people at ${HIGH_BAR}+ and found ${b.hits} of the 10 best. Real work: ${m.top48} at ${HIGH_BAR}+, ${m.hits} found.`;
+    setLine(resultLine, text);
+    setLine(verdict, text);
   }
 
   // Clear, then fill after a beat, so a repeated summary is still announced.
@@ -976,6 +978,8 @@ function mount(root, panel) {
     }
     markRules();
     nameMain();
+    // Scene 4's line belongs to the two charts, not to one rule (narrate writes it).
+    if (state.scene === 'lab') return;
     if (r) setLine(resultLine, ruleLine(r, m));
     else if (m) setLine(resultLine, `In the simulation, your rules find ${m.hits} of the 10 best in this run.`);
   }
@@ -1086,6 +1090,21 @@ function mount(root, panel) {
     howToggle.addEventListener('click', () => setHow(how.classList.contains('is-closed')));
   }
   setHow(wide.matches);
+  // Beside the charts, the steps sit in scene 4's text column under its intro, so the charts
+  // get the full height; on a phone they sit at the top of the lab.
+  const labBeat = document.querySelector('.beat[data-beat="lab"]');
+  function placeHow() {
+    if (!how || !labBeat) return;
+    const beside = wide.matches && html.classList.contains('stage-on');
+    if (beside && how.parentElement !== labBeat) labBeat.insertBefore(how, labBeat.querySelector('#lab-verdict, .scene-links'));
+    if (!beside && how.parentElement !== root) root.prepend(how);
+  }
+  placeHow();
+  wide.addEventListener('change', () => {
+    placeHow();
+    setHow(wide.matches);
+  });
+  window.matchMedia('(min-height: 500px)').addEventListener('change', placeHow);
 
   /* ---------- The stage ---------- */
 
@@ -1099,6 +1118,7 @@ function mount(root, panel) {
       useRules(WORK);
       describeRules();
       setLine(resultLine, ' ');
+      setLine(verdict, ' ');
       startBase();
       idle();
       startTimer = setTimeout(() => state.scene === 'lab' && playBoth(), reduced ? 0 : previousId ? 600 : 400);
