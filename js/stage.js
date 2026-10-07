@@ -16,9 +16,10 @@ const html = document.documentElement;
 const SCENES = [
   { id: 'start', section: 0, beat: null, rating: 3.0 },
   { id: 'everywhere', section: 1, beat: null, rating: 3.4 },
-  { id: 'guess', section: 2, beat: null, rating: 3.8 },
-  { id: 'lab', section: 3, beat: 'lab', rating: 4.2 },
-  { id: 'fix', section: 3, beat: 'fix', rating: 4.6 },
+  { id: 'guess', section: 2, beat: null, rating: 3.7 },
+  { id: 'lab', section: 3, beat: 'lab', rating: 4.0 },
+  { id: 'fix', section: 3, beat: 'fix', rating: 4.3 },
+  { id: 'compare', section: 3, beat: 'compare', rating: 4.6 },
   { id: 'vouched', section: 4, beat: null, rating: 5.0 },
 ];
 const LAST = SCENES.length - 1;

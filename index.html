@@ -33,13 +33,13 @@
   <script nomodule>document.documentElement.classList.remove('js', 'stage-on');</script>
   <link rel="preload" href="fonts/Newsreader-normal-300-700.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/IBMPlexMono-normal-500.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/style.css?v=2">
-  <link rel="stylesheet" href="css/stage.css?v=2">
-  <link rel="stylesheet" href="css/charts.css?v=2">
-  <link rel="stylesheet" href="css/lab.css?v=2">
-  <script type="module" src="js/stage.js?v=2"></script>
-  <script type="module" src="js/charts.js?v=2"></script>
-  <script type="module" src="js/lab.js?v=2"></script>
+  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/stage.css?v=3">
+  <link rel="stylesheet" href="css/charts.css?v=3">
+  <link rel="stylesheet" href="css/lab.css?v=3">
+  <script type="module" src="js/stage.js?v=3"></script>
+  <script type="module" src="js/charts.js?v=3"></script>
+  <script type="module" src="js/lab.js?v=3"></script>
   <link rel="modulepreload" href="js/motion.js">
   <link rel="modulepreload" href="js/stars.js">
   <link rel="modulepreload" href="js/lab-model.js">
@@ -134,14 +134,17 @@
         </div>
         <div class="beat" data-beat="fix" id="fix">
           <h2 class="scene-title" id="h-fix" tabindex="-1" data-words>The fix: praise has to point at real work</h2>
-          <p class="scene-body" id="fix-note" data-rise>When a vouch has to point at something real the person made, it’s hard to fake. Tap any set of rules below to run it on the same 80&nbsp;people.</p>
+          <p class="scene-body" id="fix-note" data-rise>When a vouch has to point at something real the person made, it’s hard to fake. Here are the same 80 people when every rating points at real&nbsp;work.</p>
+          <p class="label scene-links" data-rise><button type="button" class="text-button why-button" aria-controls="why-fix" aria-expanded="false">Why?</button></p>
+        </div>
+        <div class="beat" data-beat="compare" id="compare">
+          <h2 class="scene-title" id="h-compare" tabindex="-1" data-words>Which rules find the best people?</h2>
+          <p class="scene-body" id="compare-note" data-rise>Each bar is a set of rules, averaged over 12 simulated companies. Tap one to run it on the same 80&nbsp;people.</p>
           <div class="rules" id="rules" data-rise aria-labelledby="rules-title">
             <p class="fallback">This chart needs JavaScript. In our simulation, of the 10 most skilled people, the top 10 by score finds about 8 with everything together, about 6 when praise is tied to real work or with Vouched-style rules, about 5 with written reviews, hidden reviews or saying how you know someone, about 5 with one-click likes, and about 2 with LinkedIn-style endorsements. Guessing finds about 1. These are simulated, not measured.</p>
           </div>
           <p class="beat-links label scene-links" data-rise>
             <button type="button" class="text-button" id="rules-open" aria-controls="lab-panel" aria-expanded="false">Try other rules</button>
-            <span aria-hidden="true">·</span>
-            <button type="button" class="text-button why-button" aria-controls="why-fix" aria-expanded="false">Why?</button>
           </p>
         </div>
       </div>
@@ -171,7 +174,7 @@
       </div>
     </section>
 
-    <!-- Scene 6: the close -->
+    <!-- Scene 7: the close -->
     <section class="scene scene-close" id="vouched" data-section="4" aria-labelledby="h-vouched">
       <div class="scene-text">
         <h2 class="scene-title" id="h-vouched" tabindex="-1" data-words>What this means for Vouched</h2>
@@ -197,14 +200,15 @@
   <aside class="lab-panel" id="lab-panel" aria-labelledby="lab-panel-title" hidden></aside>
 
   <nav class="frame-bottom" aria-label="Scenes">
-    <p class="frame-count label" aria-hidden="true"><span class="frame-now">01</span> / 06</p>
+    <p class="frame-count label" aria-hidden="true"><span class="frame-now">01</span> / 07</p>
     <ol class="frame-dots" role="list">
-      <li><button type="button" data-go="0" aria-label="Scene 1 of 6: Everyone’s a 4.8" aria-current="step"></button></li>
-      <li><button type="button" data-go="1" aria-label="Scene 2 of 6: everywhere"></button></li>
-      <li><button type="button" data-go="2" aria-label="Scene 3 of 6: one example, Airbnb"></button></li>
-      <li><button type="button" data-go="3" aria-label="Scene 4 of 6: the lab"></button></li>
-      <li><button type="button" data-go="4" aria-label="Scene 5 of 6: the fix"></button></li>
-      <li><button type="button" data-go="5" aria-label="Scene 6 of 6: what this means for Vouched"></button></li>
+      <li><button type="button" data-go="0" aria-label="Scene 1 of 7: Everyone’s a 4.8" aria-current="step"></button></li>
+      <li><button type="button" data-go="1" aria-label="Scene 2 of 7: everywhere"></button></li>
+      <li><button type="button" data-go="2" aria-label="Scene 3 of 7: one example, Airbnb"></button></li>
+      <li><button type="button" data-go="3" aria-label="Scene 4 of 7: the lab"></button></li>
+      <li><button type="button" data-go="4" aria-label="Scene 5 of 7: the fix"></button></li>
+      <li><button type="button" data-go="5" aria-label="Scene 6 of 7: which rules find the best people"></button></li>
+      <li><button type="button" data-go="6" aria-label="Scene 7 of 7: what this means for Vouched"></button></li>
     </ol>
     <button type="button" class="frame-cue label" data-go="1" aria-label="Next scene">Scroll<svg viewBox="0 0 12 8" aria-hidden="true" focusable="false"><path d="M1 1.5l5 5 5-5"/></svg></button>
   </nav>

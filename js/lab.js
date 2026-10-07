@@ -1,8 +1,8 @@
 // The trust lab: 80 coworkers vouching for each other, drawn as a dot plot that moves round by
 // round. The model lives in lab-model.js; this file draws it and wires up its controls.
 //
-// Scenes 4 and 5 share this one lab. Scene 4 plays the worst rules from round 0. Scene 5 asks
-// which rules find the best people: a bar for each set of rules, with its average over a dozen
+// Scenes 4 to 6 share this one lab. Scene 4 plays the worst rules from round 0, scene 5 praise
+// tied to real work. Scene 6 asks which rules find the best people: a bar for each set of rules, with its average over a dozen
 // simulated companies, and a tap on a bar runs those rules on this company, with one plain line
 // on what they find and what they cost. "Try other rules" opens a frosted panel over the scene's
 // text, beside the chart on desktop and above it on a phone, so the chart stays in full view
@@ -13,7 +13,7 @@ import { MOVE_MS, ease, animate, reduceMotion, setLine } from './motion.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const ROUND_MS = 280; // time between rounds while playing
-const QUICK_ROUND_MS = 110; // a run started from scene 5's bars, so comparing rules stays quick
+const QUICK_ROUND_MS = 110; // a run started from scene 6's bars, so comparing rules stays quick
 // On the stars scale dots stack in score columns 0.05 wide, or 0.1 wide when the field is
 // too narrow for 0.05 columns to sit side by side without piling into each other. Both
 // widths put column edges on 4.8 and 5, so the 4.8+ band stays exact.
@@ -26,7 +26,7 @@ const MIN_FIELD_H = 96;
 // sixteenths of the end, so each of those ends divides by 16.
 const YES_AXIS = [4, 8, 12, 16, 20, 24, 32, 40, 60, 80, 100, 120, 160, 200, 240, 300, 400, 600, 800, 1000, 1200, 1600, 2000, 2400, 3000, 4000];
 const ROOT_AXIS = [16, 32, 48, 64, 80, 96, 128, 160, 192, 240, 320, 400, 480, 640, 800, 960, 1280, 1600, 1920, 2400, 3200, 4000];
-// Scene 5 opens on the rules its headline names: praise tied to real work.
+// Scene 5 plays the rules its headline names: praise tied to real work.
 const WORK = Object.freeze({ ...WORST, type: 'work' });
 const html = document.documentElement;
 
@@ -680,7 +680,7 @@ function mount(root, panel) {
   }
 
   // A set of rules with our assumptions, as a new run at round 0: the worst rules for scene 4,
-  // a bar's rules in scene 5. The bars are our assumptions' averages, so a bar runs with them.
+  // a bar's rules in scene 6. The bars are our assumptions' averages, so a bar runs with them.
   function useRules(settings) {
     for (const { a, input, sync } of sliders) {
       state.values[a.id] = a.initial;
@@ -923,7 +923,7 @@ function mount(root, panel) {
     rulesBox.insertAdjacentHTML(
       'beforeend',
       `<div class="rules-head">` +
-        `<p class="label rules-title" id="rules-title">Which rules find the best people? In our simulation.</p>` +
+        `<p class="label rules-title" id="rules-title">In our simulation</p>` +
         `<div class="rules-pills" role="group" aria-label="Show the rules for">` +
         `<button type="button" class="rules-pill" data-scale="stars" aria-pressed="true">Stars</button>` +
         `<button type="button" class="rules-pill" data-scale="yes" aria-pressed="false">A named yes</button>` +
@@ -952,17 +952,17 @@ function mount(root, panel) {
     describeRules();
     placeRules();
   }
-  figuresData.then(buildRules).catch((err) => console.warn('Scene 5 kept its fallback because the rules chart could not be built.', err));
+  figuresData.then(buildRules).catch((err) => console.warn('Scene 6 kept its fallback because the rules chart could not be built.', err));
 
-  // Beside the lab on desktop, in the text column; on a phone, under the lab, which stays pinned
-  // at the top of its scene while the bars scroll, so a tapped bar and its result are in view.
+  // Scene 6's bars: beside the lab on desktop, in the text column; on a phone, in the lab's
+  // column, ahead of the dots (lab.css).
   const wide = window.matchMedia('(min-width: 960px)');
-  const fixBeat = document.querySelector('.beat[data-beat="fix"]');
+  const compareBeat = document.querySelector('.beat[data-beat="compare"]');
   const visual = scene.querySelector('.scene-visual');
   function placeRules() {
-    if (!rulesBox || !fixBeat || !visual) return;
+    if (!rulesBox || !compareBeat || !visual) return;
     const beside = wide.matches || !html.classList.contains('stage-on');
-    if (beside && rulesBox.parentElement !== fixBeat) fixBeat.insertBefore(rulesBox, fixBeat.querySelector('.beat-links'));
+    if (beside && rulesBox.parentElement !== compareBeat) compareBeat.insertBefore(rulesBox, compareBeat.querySelector('.beat-links'));
     if (!beside && rulesBox.parentElement !== visual) visual.append(rulesBox);
   }
   wide.addEventListener('change', placeRules);
@@ -1013,9 +1013,9 @@ function mount(root, panel) {
 
   /* ---------- The stage ---------- */
 
-  // Scene 4 plays the worst rules from round 0, each time it arrives. Scene 5 opens on the rules
-  // its headline names, praise tied to real work: the dots travel from wherever they were to
-  // that run's end as the scene lands, and its bar is the one pressed. Leaving the lab pauses it.
+  // Scene 4 plays the worst rules from round 0, each time it arrives, and scene 5 plays praise
+  // tied to real work the same way. Scene 6 compares every set of rules beside that run, with its
+  // bar pressed. Leaving the lab pauses it.
   function onScene({ id, previousId }) {
     state.scene = id;
     if (id === 'lab' && !howShownAt) howShownAt = performance.now();
@@ -1029,10 +1029,24 @@ function mount(root, panel) {
       if (reduced) finishNow();
       else startTimer = setTimeout(() => state.scene === 'lab' && play(), previousId ? 650 : 450);
     } else if (id === 'fix' && previousId !== 'fix') {
+      // Scene 5 plays praise tied to real work from round 0, as scene 4 played the worst rules.
       closeRules(false);
       useRules(WORK);
-      settle();
-    } else if (id !== 'lab' && id !== 'fix') {
+      describeRules();
+      idle();
+      if (reduced) finishNow();
+      else startTimer = setTimeout(() => state.scene === 'fix' && play(), previousId ? 650 : 450);
+    } else if (id === 'compare' && previousId !== 'compare') {
+      // Scene 6 starts from that finished run, with its bar pressed; a tap on a bar runs another.
+      if (previousId === 'fix' && sameAs(state.settings, WORK) && assumptionsUntouched()) {
+        if (state.run.done) describeRules();
+        else settle();
+      } else {
+        closeRules(false);
+        useRules(WORK);
+        settle();
+      }
+    } else if (id !== 'lab' && id !== 'fix' && id !== 'compare') {
       closeRules(false);
       pause();
     }
@@ -1050,7 +1064,7 @@ function mount(root, panel) {
   });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) pause(true);
-    else if (state.resumeOnShow && (state.scene === 'lab' || state.scene === 'fix')) play();
+    else if (state.resumeOnShow && (state.scene === 'lab' || state.scene === 'fix' || state.scene === 'compare')) play();
   });
 
   // The field's size follows its scene: redraw in the same frame, so it never stretches.
@@ -1067,7 +1081,7 @@ function mount(root, panel) {
   idle();
   root.classList.add('is-built');
   if (html.classList.contains('stage-ready') && html.dataset.scene !== undefined) {
-    onScene({ id: ['start', 'everywhere', 'guess', 'lab', 'fix', 'vouched'][Number(html.dataset.scene)], previousId: null });
+    onScene({ id: ['start', 'everywhere', 'guess', 'lab', 'fix', 'compare', 'vouched'][Number(html.dataset.scene)], previousId: null });
   }
 }
 

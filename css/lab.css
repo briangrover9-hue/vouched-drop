@@ -339,7 +339,7 @@
   margin-block: -12px;
 }
 
-/* Scene 5: what the rules on the chart find, and what they cost. */
+/* Scenes 5 and 6: what the rules on the chart find, and what they cost. */
 .lab-result {
   flex: none;
   min-height: calc(1.42em * 2);
@@ -368,7 +368,7 @@ html.stage-on .scene-lab[data-beat="lab"] .lab-result,
   display: grid;
 }
 
-/* ---------- Scene 5: which rules find the best people? ---------- */
+/* ---------- Scene 6: which rules find the best people? ---------- */
 
 /* One bar per set of rules: its name, its average against a 0 to 10 track with a dashed line
    where guessing lands, and the number. The pressed bar is the one the lab is running. */
@@ -555,23 +555,24 @@ html.stage-on .scene-lab[data-beat="lab"] .lab-result,
   display: none;
 }
 
-/* Phones and narrow tablets. In scene 5 the bars come first, right under the headline, with
-   the answer to the tapped bar directly under them; the caveat follows, and the dots and big
-   numbers sit below for anyone who scrolls. */
+/* Phones and narrow tablets. Scenes 4 and 5 give the whole area to the dots. Scene 6 is the
+   comparison: the bars first, right under the headline, then a big count of the best people
+   the tapped rules found and the line on what they cost, then the caveat. The dots were on
+   screen in scene 5, so here they make way. */
 @media (max-width: 959.98px) {
   .rules {
     --name-w: 9rem;
   }
-  html.stage-on .scene-lab[data-beat="lab"] .scene-visual > .rules {
+  html.stage-on .scene-lab:not([data-beat="compare"]) .scene-visual > .rules {
     display: none;
   }
-  /* Scene 5 and the rules panel need the room: the steps were on screen in scene 4. */
-  html.stage-on .scene-lab[data-beat="fix"] .lab-how,
+  /* Scenes 5 and 6 and the rules panel need the room: the steps were on screen in scene 4. */
+  html.stage-on .scene-lab:not([data-beat="lab"]) .lab-how,
   .scene-lab.is-tuning .lab-how {
     display: none;
   }
-  /* The lab's text column takes only the beat on screen, so scene 4's column is as short as
-     its own words. */
+  /* The lab's text column takes only the beat on screen, so each column is as short as its
+     own words. */
   html.stage-on .scene-lab .scene-text {
     position: relative;
   }
@@ -591,7 +592,7 @@ html.stage-on .scene-lab[data-beat="lab"] .lab-result,
   .lab-how-steps {
     gap: 5px;
   }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .scene-visual {
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .scene-visual {
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -599,55 +600,42 @@ html.stage-on .scene-lab[data-beat="lab"] .lab-result,
     overscroll-behavior: contain;
     touch-action: pan-y pinch-zoom;
   }
-  /* The headline says it; the room goes to the bars. */
-  html.stage-on .scene-lab[data-beat="fix"] #fix-note {
+  /* The headline and the chart's label say it; the room goes to the bars. */
+  html.stage-on .scene-lab[data-beat="compare"] #compare-note {
     display: none;
   }
-  /* The rules box opens up so its parts and the lab share one column, in reading order. */
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .scene-visual > .rules {
+  /* The rules box and the lab open up so their parts share one column, in reading order. */
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .scene-visual > .rules,
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .lab {
     display: contents;
   }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-head {
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .rules-head {
     order: 1;
   }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-chart {
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .rules-chart {
     order: 2;
   }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab {
-    display: contents;
-  }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-result {
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .lab-head {
     order: 3;
   }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-caveat {
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .lab-result {
     order: 4;
   }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-note {
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .rules-caveat {
     order: 5;
   }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-head {
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .rules-note {
     order: 6;
+    padding-bottom: 12px;
   }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-field-wrap {
-    order: 7;
-    margin-bottom: 12px;
-  }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-field-wrap {
-    flex: none;
-    height: clamp(120px, 24vh, 220px);
-    min-height: 0;
-    max-height: none;
-  }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-bar {
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .rules-bar {
     min-height: 30px;
   }
-  /* The key and the round were on the screen in scene 4; here the room goes to the bars. */
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-legend,
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-foot {
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) [data-readout="second"],
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .lab-legend,
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .lab-field-wrap,
+  html.stage-on .scene-lab[data-beat="compare"]:not(.is-tuning) .lab-foot {
     display: none;
-  }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-big {
-    font-size: 1.875rem;
   }
 }
 /* A phone too short for the steps and a readable chart keeps scene 4's intro, which says the
