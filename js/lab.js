@@ -962,7 +962,9 @@ function mount(root, panel) {
     const about = Math.round(r.hits);
     const here = m && m.hits !== null ? m.hits : about;
     const cost = r.cost.replace('{n}', String(Math.round(r.costValue ?? 0)));
-    return `In the simulation, ${r.finds} about ${about} of the 10 best${here !== about ? `, ${here} in this run` : ''}. The cost: ${cost}.`;
+    // Vouched still puts some people very high; once its run is done, the line says who they are.
+    const right = r.id === 'vouched' && m && m.hits !== null ? ` Some still rate very high, but they’re the right ones: ${m.hits} of the 10 most skilled.` : '';
+    return `In the simulation, ${r.finds} about ${about} of the 10 best${here !== about ? `, ${here} in this run` : ''}. The cost: ${cost}.${right}`;
   }
 
   // The line under the chart and the pressed bar, for whatever rules the lab is running.

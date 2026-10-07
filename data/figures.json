@@ -224,7 +224,7 @@
         },
         "hits": 8.33,
         "finds": "Vouched-style rules find",
-        "cost": "every vouch points at real work, waits for both sides, says how you know them and counts by who gave it"
+        "cost": "every vouch points at real work and waits for both sides"
       },
       {
         "id": "likes",
