@@ -555,9 +555,9 @@ html.stage-on .scene-lab[data-beat="lab"] .lab-result,
   display: none;
 }
 
-/* Phones and narrow tablets: the rules sit under the lab. In scene 5 the lab stays pinned at
-   the top of its area while the bars scroll under it, so the tapped bar and the lab's answer
-   are on screen together. */
+/* Phones and narrow tablets. In scene 5 the bars come first, right under the headline, with
+   the answer to the tapped bar directly under them; the caveat follows, and the dots and big
+   numbers sit below for anyone who scrolls. */
 @media (max-width: 959.98px) {
   .rules {
     --name-w: 9rem;
@@ -599,20 +599,47 @@ html.stage-on .scene-lab[data-beat="lab"] .lab-result,
     overscroll-behavior: contain;
     touch-action: pan-y pinch-zoom;
   }
+  /* The headline says it; the room goes to the bars. */
+  html.stage-on .scene-lab[data-beat="fix"] #fix-note {
+    display: none;
+  }
+  /* The rules box opens up so its parts and the lab share one column, in reading order. */
+  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .scene-visual > .rules {
+    display: contents;
+  }
+  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-head {
+    order: 1;
+  }
+  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-chart {
+    order: 2;
+  }
   html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    flex: none;
-    height: auto;
-    padding-bottom: 8px;
-    background: var(--paper);
+    display: contents;
+  }
+  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-result {
+    order: 3;
+  }
+  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-caveat {
+    order: 4;
+  }
+  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-note {
+    order: 5;
+  }
+  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-head {
+    order: 6;
+  }
+  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-field-wrap {
+    order: 7;
+    margin-bottom: 12px;
   }
   html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-field-wrap {
     flex: none;
-    height: clamp(104px, 20vh, 220px);
+    height: clamp(120px, 24vh, 220px);
     min-height: 0;
     max-height: none;
+  }
+  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .rules-bar {
+    min-height: 30px;
   }
   /* The key and the round were on the screen in scene 4; here the room goes to the bars. */
   html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-legend,
@@ -621,10 +648,6 @@ html.stage-on .scene-lab[data-beat="lab"] .lab-result,
   }
   html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .lab-big {
     font-size: 1.875rem;
-  }
-  html.stage-on .scene-lab[data-beat="fix"]:not(.is-tuning) .scene-visual > .rules {
-    flex: none;
-    padding-bottom: 12px;
   }
 }
 /* A phone too short for the steps and a readable chart keeps scene 4's intro, which says the
